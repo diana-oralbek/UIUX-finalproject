@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — Rush Island</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--indigo:#192A51;--rose:#EBBAB9;--denim:#6290C3;--white:#FEFEFA;--black:#100C08;}
+    body{background:var(--black);color:var(--white);font-family:'Exo 2',sans-serif;overflow-x:hidden;cursor:none;}
+    .cursor{width:14px;height:14px;background:var(--rose);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:difference;}
+    .cursor-ring{width:40px;height:40px;border:1.5px solid var(--denim);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:all 0.14s ease;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:rgba(16,12,8,0.55);backdrop-filter:blur(16px);border-bottom:1px solid rgba(235,186,185,0.1);}
+    .nav-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;color:var(--white);text-decoration:none;letter-spacing:0.12em;display:flex;align-items:center;gap:0.6rem;}
+    .nav-logo-img{height:36px;width:36px;object-fit:contain;border-radius:4px;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+    .nav-links{display:flex;gap:2rem;list-style:none;}
+    .nav-links a{color:rgba(254,254,250,0.55);text-decoration:none;font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;transition:color 0.2s;}
+    .nav-links a:hover{color:var(--rose);}
+    .nav-play{font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:0.6rem 1.4rem;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
+
+    .page-hero{
+      min-height:60vh;position:relative;overflow:hidden;
+      display:flex;flex-direction:column;justify-content:flex-end;
+      padding:8rem 5rem 5rem;
+      background:linear-gradient(135deg,#0d1f4a 0%,#1a3a7a 40%,#0e2260 70%,#0a1840 100%);
+    }
+    .page-hero::before{
+      content:'RI';position:absolute;bottom:-3rem;right:2rem;
+      font-family:'Orbitron',monospace;font-size:22rem;font-weight:900;
+      color:rgba(255,255,255,0.03);pointer-events:none;line-height:1;
+    }
+    .page-hero::after{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 70% 80% at 20% 60%,rgba(98,144,195,0.15) 0%,transparent 65%),
+                 radial-gradient(ellipse 40% 40% at 80% 30%,rgba(30,80,180,0.2) 0%,transparent 60%);
+      pointer-events:none;
+    }
+    .page-title{font-family:'Orbitron',monospace;font-size:clamp(2.5rem,6vw,5rem);font-weight:900;line-height:1;animation:fadeUp 0.7s ease both;position:relative;z-index:1;}
+    .page-title span{color:var(--rose);}
+    .page-sub{font-size:1rem;line-height:1.7;color:rgba(254,254,250,0.6);margin-top:1.2rem;max-width:600px;animation:fadeUp 0.7s 0.15s ease both;position:relative;z-index:1;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    .section-label{font-size:0.65rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--rose);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem;}
+    .section-label::before{content:'';width:1.8rem;height:1px;background:var(--rose);}
+    .section-title{font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(1.5rem,3vw,2.5rem);line-height:1.1;}
+    .body-text{font-size:0.95rem;line-height:1.85;color:rgba(254,254,250,0.6);}
+
+    /* Philosophy */
+    .philosophy{padding:6rem 5rem;background:var(--black);}
+    .phil-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;margin-top:3rem;}
+    .phil-quote{
+      font-family:'Orbitron',monospace;font-size:clamp(1.2rem,2.5vw,2rem);font-weight:700;
+      line-height:1.3;color:var(--white);
+      border-left:3px solid var(--rose);padding-left:2rem;
+    }
+    .phil-quote span{color:var(--rose);}
+
+    /* Features */
+    .features{padding:6rem 5rem;background:var(--indigo);}
+    .features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:3rem;}
+    .feature-card{background:rgba(16,12,8,0.45);border:1px solid rgba(98,144,195,0.15);padding:2.5rem;transition:all 0.3s;}
+    .feature-card:hover{border-color:var(--rose);transform:translateX(4px);}
+    .feature-icon{font-size:2rem;margin-bottom:1rem;display:block;}
+    .feature-title{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--rose);margin-bottom:0.7rem;}
+    .feature-text{font-size:0.88rem;line-height:1.75;color:rgba(254,254,250,0.55);}
+
+    /* Dev note */
+    .dev-note{padding:6rem 5rem;background:var(--black);}
+    .dev-inner{max-width:700px;margin:0 auto;text-align:center;}
+    .dev-avatar{font-size:4rem;margin-bottom:1.5rem;display:block;}
+    .dev-text{font-size:1rem;line-height:1.85;color:rgba(254,254,250,0.65);font-style:italic;margin-top:1.5rem;}
+    .dev-text strong{color:var(--rose);font-style:normal;}
+    .dev-sig{font-family:'Orbitron',monospace;font-size:0.8rem;color:rgba(254,254,250,0.3);margin-top:1.5rem;letter-spacing:0.1em;}
+
+    /* FAQ */
+    .faq{padding:6rem 5rem;background:var(--indigo);}
+    .faq-list{display:flex;flex-direction:column;gap:2px;margin-top:3rem;max-width:800px;}
+    .faq-item{background:rgba(16,12,8,0.45);border:1px solid rgba(98,144,195,0.15);}
+    .faq-q{
+      font-family:'Orbitron',monospace;font-size:0.88rem;font-weight:700;color:var(--white);
+      padding:1.5rem 2rem;cursor:pointer;
+      display:flex;justify-content:space-between;align-items:center;
+      transition:color 0.2s;
+    }
+    .faq-q:hover{color:var(--rose);}
+    .faq-arrow{font-size:1rem;transition:transform 0.3s;color:var(--denim);}
+    .faq-a{
+      font-size:0.88rem;line-height:1.75;color:rgba(254,254,250,0.55);
+      padding:0 2rem 1.5rem;display:none;
+    }
+    .faq-item.open .faq-a{display:block;}
+    .faq-item.open .faq-arrow{transform:rotate(180deg);color:var(--rose);}
+    .faq-item.open{border-color:rgba(235,186,185,0.2);}
+
+    /* Rush Studio */
+    .rush-studio{padding:6rem 5rem;background:var(--indigo);position:relative;overflow:hidden;}
+    .rush-studio::before{content:'STUDIO';position:absolute;right:-2rem;top:50%;transform:translateY(-50%);font-family:'Orbitron',monospace;font-size:12rem;font-weight:900;color:rgba(254,254,250,0.02);pointer-events:none;}
+    .studio-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:3rem;}
+    .studio-card{background:rgba(16,12,8,0.5);border:1px solid rgba(98,144,195,0.12);padding:2.5rem 2rem;transition:all 0.3s;}
+    .studio-card:hover{background:rgba(25,42,81,0.55);border-color:var(--rose);transform:translateY(-4px);}
+    .studio-icon{font-size:2.2rem;margin-bottom:1rem;display:block;}
+    .studio-title{font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;color:var(--rose);margin-bottom:0.6rem;}
+    .studio-text{font-size:0.85rem;line-height:1.75;color:rgba(254,254,250,0.55);}
+    .studio-tag{display:inline-block;margin-top:0.8rem;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;border:1px solid rgba(98,144,195,0.3);color:var(--denim);padding:0.2rem 0.6rem;}
+
+    /* Platform stats bar */
+    .platform-stats{padding:3rem 5rem;background:rgba(25,42,81,0.4);border-top:1px solid rgba(98,144,195,0.1);border-bottom:1px solid rgba(98,144,195,0.1);}
+    .pstats-grid{display:flex;gap:0;justify-content:space-between;}
+    .pstat{text-align:center;flex:1;border-right:1px solid rgba(98,144,195,0.12);padding:1rem;}
+    .pstat:last-child{border-right:none;}
+    .pstat-num{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--white);}
+    .pstat-label{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(254,254,250,0.35);margin-top:0.2rem;}
+
+    /* nav online */
+    .nav-online{display:flex;align-items:center;gap:0.45rem;font-size:0.68rem;letter-spacing:0.1em;color:rgba(254,254,250,0.45);margin-right:1rem;}
+    .online-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,0.8);animation:pulse 2s ease infinite;}
+    #online-count{color:#4ade80;font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;}
+
+    .cta-bar{background:var(--rose);padding:3rem 5rem;display:flex;justify-content:space-between;align-items:center;}
+    .cta-bar-title{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:var(--black);}
+    .btn-dark{font-family:'Orbitron',monospace;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--black);color:var(--rose);padding:1rem 2.2rem;text-decoration:none;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all 0.25s;font-weight:700;}
+    .btn-dark:hover{background:var(--indigo);}
+    footer{background:var(--black);padding:2rem 5rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(98,144,195,0.1);font-size:0.72rem;color:rgba(254,254,250,0.25);}
+    .footer-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:0.9rem;color:var(--white);letter-spacing:0.1em;}
+    .footer-links{display:flex;gap:2rem;}
+    .footer-links a{color:rgba(254,254,250,0.3);text-decoration:none;transition:color 0.2s;}
+    .footer-links a:hover{color:var(--rose);}
+    .reveal{opacity:0;transform:translateY(30px);transition:all 0.6s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <nav>
+    <a class="nav-logo" href="index.html"><img src="logo.png" alt="Rush Island" class="nav-logo-img" onerror="this.style.display='none'">RUSH ISLAND</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li><li><a href="zones.html">Zones</a></li>
+      <li><a href="leaderboard.html">Leaderboard</a></li><li><a href="about.html">About</a></li>
+    </ul>
+    <div class="nav-online"><span class="online-dot"></span><span id="online-count">3,284</span>&nbsp;online</div>
+    <a class="nav-play" href="index.html#trial">Enter Rush Island →</a>
+  </nav>
+
+  <section class="page-hero">
+    <h1 class="page-title">About<br><span>Rush Island</span></h1>
+    <p class="page-sub">A browser-native obstacle racing platform built for people who are genuinely bored of mid games. 200+ levels. Zero hand-holding. One final island.</p>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <section class="philosophy">
+    <div class="reveal">
+      <div class="section-label">The Idea</div>
+      <h2 class="section-title">Why Rush Island exists.</h2>
+    </div>
+    <div class="phil-grid">
+      <p class="body-text reveal">
+        Rush Island was built out of frustration. Every obstacle game follows the same script:
+        easy start, slow middle, predictable end. You finish it, forget it, move on.
+        <br><br>
+        Rush Island is the answer to that. It was designed to be the game you don't finish in one session.
+        The game you come back to at midnight because Zone 7 is still sitting there, unbeaten,
+        and that bothers you more than you'd like to admit.
+        <br><br>
+        Every level was built with one goal: make the player want to try again immediately after failing.
+        Not tomorrow. Right now.
+      </p>
+      <div class="phil-quote reveal">
+        "Be honest. You're bored of all the same obstacle games. <span>Honestly, all the games I've played are mid.</span> Try this instead."
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">What makes it different.</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feature-icon">🧠</span>
+        <div class="feature-title">Adaptive Difficulty Curve</div>
+        <p class="feature-text">Zones 1–4 teach you the mechanics. Zones 5–8 punish mistakes. Zones 9–11 assume you already know everything. Zone 12 assumes nothing.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🔐</span>
+        <div class="feature-title">Anti-Cheat Checkpoints</div>
+        <p class="feature-text">The checkpoint system tracks movement patterns. You can't skip sections, warp ahead, or exploit jumps. Every win is earned. Full stop.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">👥</span>
+        <div class="feature-title">Social Layer</div>
+        <p class="feature-text">Invite friends, join their sessions mid-run, or spectate live. Watch someone struggle on Zone 3 and feel genuinely better about yourself.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🏅</span>
+        <div class="feature-title">Permanent Hall of Legends</div>
+        <p class="feature-text">Season resets don't touch the Hall of Legends. Clear Final Island and your name stays there forever. Not until next season. Forever.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🛒</span>
+        <div class="feature-title">Rush Economy</div>
+        <p class="feature-text">Rush Coins, avatar skins, and boosts — some earned through gameplay, some hidden in secret levels. The store exists. But the best stuff can't be bought.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">📅</span>
+        <div class="feature-title">Live Seasonal Events</div>
+        <p class="feature-text">Speed runs, midnight races, squad challenges — rotating events with limited rewards. Miss them and they're gone. Subscribe to never miss a drop.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATFORM STATS -->
+  <div class="platform-stats reveal">
+    <div class="pstats-grid">
+      <div class="pstat"><div class="pstat-num">3,200+</div><div class="pstat-label">Players Online Now</div></div>
+      <div class="pstat"><div class="pstat-num">847</div><div class="pstat-label">Active Clans</div></div>
+      <div class="pstat"><div class="pstat-num">14</div><div class="pstat-label">Secret Levels</div></div>
+      <div class="pstat"><div class="pstat-num">S1</div><div class="pstat-label">Current Season</div></div>
+      <div class="pstat"><div class="pstat-num">5%</div><div class="pstat-label">Final Island Rate</div></div>
+      <div class="pstat"><div class="pstat-num">200+</div><div class="pstat-label">Total Levels</div></div>
+    </div>
+  </div>
+
+  <!-- RUSH STUDIO -->
+  <section class="rush-studio">
+    <div class="reveal">
+      <div class="section-label">Rush Studio</div>
+      <h2 class="section-title">Build. Customize. Compete.</h2>
+      <p class="body-text" style="margin-top:0.8rem;max-width:560px;">Rush Island is more than a game — it's a platform. Create custom challenges, design your clan's identity, and workshop your avatar before you hit the track.</p>
+    </div>
+    <div class="studio-grid">
+      <div class="studio-card reveal">
+        <span class="studio-icon">🗺️</span>
+        <div class="studio-title">Level Editor</div>
+        <p class="studio-text">Design your own obstacle course and submit it for the community. Top community-made levels get added to the official rotation each season. Your creation, your name on it.</p>
+        <span class="studio-tag">Coming Season 2</span>
+      </div>
+      <div class="studio-card reveal">
+        <span class="studio-icon">⚔️</span>
+        <div class="studio-title">Clan Builder</div>
+        <p class="studio-text">Create a Rush Clan, set your banner and tag, recruit up to 50 members, and compete in weekly Clan Wars. The top 10 clans each season earn exclusive cosmetics that can't be bought anywhere.</p>
+        <span class="studio-tag">Live Now</span>
+      </div>
+      <div class="studio-card reveal">
+        <span class="studio-icon">🧍</span>
+        <div class="studio-title">Avatar Workshop</div>
+        <p class="studio-text">Mix skins, trails, capes, and title tags to build your full Rush Island identity. Some pieces are earned through gameplay. Others are hidden in secret levels. None are mandatory. All are worth it.</p>
+        <span class="studio-tag">Live Now</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEV NOTE -->
+  <section class="dev-note">
+    <div class="dev-inner reveal">
+      <span class="dev-avatar">🧠</span>
+      <div class="section-label" style="justify-content:center;">From the Creator</div>
+      <h2 class="section-title">Explore the mind<br>behind Rush Island.</h2>
+      <p class="dev-text">
+        "I built Rush Island because I wanted a game that <strong>actually took skill to finish</strong>.
+        Not reaction time. Not grinding. Actual spatial reasoning, pattern recognition, and the ability
+        to stay calm when you're on your 47th attempt at Zone 7.
+        <br><br>
+        The 14 secret levels weren't a marketing decision. They were a design decision.
+        <strong>The most attentive players deserve to find something the others miss.</strong>
+        That's what Rush Island is really about."
+      </p>
+      <div class="dev-sig">— Rush Island Dev Team · 2025</div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <div class="reveal">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-title">Do you really think<br>you saw everything?</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <div class="faq-q">Is Rush Island free to play? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes. Rush Island is completely free to play. The store exists for cosmetics only — skins, avatar items, boosts. No pay-to-win mechanics. The best rewards in the game are earned, not bought.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">How many secret levels are there? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">There are 14 confirmed secret levels. We're not telling you where they are. Some require specific sequences of actions nobody would try by accident. The community has found 9 of them so far.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">Can I play with friends? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes. Invite friends directly, join active sessions, or spectate live runs. The Squad Challenge event (every Friday) is designed specifically for groups of 4. It's the hardest co-op content in the game.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">What happens if I reach Final Island? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Your name gets added to the Hall of Legends permanently. You get a unique avatar badge, an exclusive skin that can't be earned any other way, and the knowledge that you're in the top 5% of all Rush Island players. Season resets don't affect the Hall of Legends list.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">New race starts in 10 minutes. What do I do? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Subscribe to event notifications on the main page. Win = W. Lost? Skill issue. The game isn't for weaklings — but it is for anyone willing to try again.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-bar reveal">
+    <div class="cta-bar-title">Still reading? Go play.</div>
+    <a class="btn-dark" href="index.html#trial">🎮 Enter Rush Island</a>
+  </div>
+
+  <footer>
+    <div><div class="footer-logo">RUSH ISLAND</div><div style="margin-top:0.4rem;">Rush Island · © 2026</div></div>
+    <div class="footer-links">
+      <a href="index.html">Home</a><a href="zones.html">Zones</a><a href="leaderboard.html">Leaderboard</a>
+    </div>
+  </footer>
+
+  <script>
+    (function(){const el=document.getElementById('online-count');if(!el)return;let base=3284;setInterval(()=>{base+=Math.floor((Math.random()-0.45)*12);base=Math.max(2800,Math.min(4200,base));el.textContent=base.toLocaleString();},4000);})();
+    const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function anim(){cur.style.transform=`translate(${mx-7}px,${my-7}px)`;rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform=`translate(${rx-20}px,${ry-20}px)`;requestAnimationFrame(anim);})();
+    const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.08});
+    document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+    document.querySelectorAll('.faq-item').forEach(item=>{
+      item.querySelector('.faq-q').addEventListener('click',()=>{
+        const wasOpen=item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+        if(!wasOpen)item.classList.add('open');
+      });
+    });
+  </script>
+</body>
+</html>

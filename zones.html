@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zones — Rush Island</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--indigo:#192A51;--rose:#EBBAB9;--denim:#6290C3;--white:#FEFEFA;--black:#100C08;}
+    body{background:var(--black);color:var(--white);font-family:'Exo 2',sans-serif;overflow-x:hidden;cursor:none;}
+    .cursor{width:14px;height:14px;background:var(--rose);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:difference;}
+    .cursor-ring{width:40px;height:40px;border:1.5px solid var(--denim);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:all 0.14s ease;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:rgba(16,12,8,0.55);backdrop-filter:blur(16px);border-bottom:1px solid rgba(235,186,185,0.1);}
+    .nav-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;color:var(--white);text-decoration:none;letter-spacing:0.12em;display:flex;align-items:center;gap:0.6rem;}
+    .nav-logo-img{height:36px;width:36px;object-fit:contain;border-radius:4px;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+    .nav-links{display:flex;gap:2rem;list-style:none;}
+    .nav-links a{color:rgba(254,254,250,0.55);text-decoration:none;font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;transition:color 0.2s;}
+    .nav-links a:hover{color:var(--rose);}
+    .nav-play{font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:0.6rem 1.4rem;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
+
+    .page-hero{min-height:50vh;display:flex;flex-direction:column;justify-content:flex-end;padding:8rem 5rem 4rem;position:relative;overflow:hidden;background:linear-gradient(160deg,#100C08 0%,#192A51 70%,#100C08 100%);}
+    .page-hero::before{content:'ZONES';position:absolute;right:-2rem;top:50%;transform:translateY(-50%);font-family:'Orbitron',monospace;font-size:14rem;font-weight:900;color:rgba(254,254,250,0.025);pointer-events:none;}
+    .grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(98,144,195,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(98,144,195,0.05) 1px,transparent 1px);background-size:60px 60px;}
+    .page-title{font-family:'Orbitron',monospace;font-size:clamp(3rem,7vw,6rem);font-weight:900;line-height:0.95;position:relative;z-index:1;animation:fadeUp 0.7s ease both;}
+    .page-title span{color:var(--rose);}
+    .page-sub{max-width:540px;font-size:1rem;line-height:1.7;color:rgba(254,254,250,0.55);margin-top:1.2rem;position:relative;z-index:1;animation:fadeUp 0.7s 0.15s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    .section-label{font-size:0.65rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--rose);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem;}
+    .section-label::before{content:'';width:1.8rem;height:1px;background:var(--rose);}
+
+    .zones-content{padding:5rem;}
+    .zones-full-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+    .zone-big{
+      background:rgba(25,42,81,0.2);border:1px solid rgba(98,144,195,0.12);
+      padding:2.5rem 2rem;transition:all 0.3s;position:relative;overflow:hidden;
+    }
+    .zone-big::before{
+      content:attr(data-zone);position:absolute;bottom:-1rem;right:0.5rem;
+      font-family:'Orbitron',monospace;font-size:5rem;font-weight:900;
+      color:rgba(254,254,250,0.03);pointer-events:none;
+    }
+    .zone-big:hover{background:rgba(25,42,81,0.5);border-color:rgba(235,186,185,0.25);transform:translateY(-3px);}
+    .zone-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;}
+    .zone-num-big{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:0.15em;color:rgba(254,254,250,0.2);}
+    .zone-diff{display:inline-block;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.6rem;border:1px solid;}
+    .diff-easy{color:#4ade80;border-color:rgba(74,222,128,0.3);}
+    .diff-medium{color:var(--denim);border-color:rgba(98,144,195,0.3);}
+    .diff-hard{color:var(--rose);border-color:rgba(235,186,185,0.3);}
+    .diff-extreme{color:#f97316;border-color:rgba(249,115,22,0.3);}
+    .diff-secret{color:#a855f7;border-color:rgba(168,85,247,0.3);}
+    .zone-icon-big{font-size:2.5rem;margin-bottom:0.8rem;display:block;}
+    .zone-name-big{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;color:var(--white);margin-bottom:0.6rem;}
+    .zone-desc-big{font-size:0.85rem;line-height:1.75;color:rgba(254,254,250,0.55);margin-bottom:1.2rem;}
+    .zone-stats{display:flex;gap:1.5rem;}
+    .zstat{display:flex;flex-direction:column;gap:0.1rem;}
+    .zstat-val{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--denim);}
+    .zstat-key{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(254,254,250,0.3);}
+
+    .secret-zone{background:rgba(168,85,247,0.05);border-color:rgba(168,85,247,0.15)!important;}
+    .secret-zone:hover{background:rgba(168,85,247,0.12)!important;border-color:rgba(168,85,247,0.3)!important;}
+
+    .cta-bar{background:var(--indigo);padding:3rem 5rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(98,144,195,0.15);}
+    .btn-play{font-family:'Orbitron',monospace;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:1rem 2.2rem;text-decoration:none;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all 0.25s;font-weight:700;}
+    .btn-play:hover{background:var(--white);}
+    footer{background:var(--black);padding:2rem 5rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(98,144,195,0.1);font-size:0.72rem;color:rgba(254,254,250,0.25);}
+    .footer-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:0.9rem;color:var(--white);letter-spacing:0.1em;}
+    .footer-links{display:flex;gap:2rem;}
+    .footer-links a{color:rgba(254,254,250,0.3);text-decoration:none;transition:color 0.2s;}
+    .footer-links a:hover{color:var(--rose);}
+    .reveal{opacity:0;transform:translateY(30px);transition:all 0.6s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .nav-online{display:flex;align-items:center;gap:0.45rem;font-size:0.68rem;letter-spacing:0.1em;color:rgba(254,254,250,0.45);margin-right:1rem;}
+    .online-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,0.8);animation:pulse 2s ease infinite;}
+    #online-count{color:#4ade80;font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;}
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <nav>
+    <a class="nav-logo" href="index.html"><img src="logo.png" alt="Rush Island" class="nav-logo-img" onerror="this.style.display='none'">RUSH ISLAND</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li><li><a href="zones.html">Zones</a></li>
+      <li><a href="leaderboard.html">Leaderboard</a></li><li><a href="about.html">About</a></li>
+    </ul>
+    <div class="nav-online"><span class="online-dot"></span><span id="online-count">3,284</span>&nbsp;online</div>
+    <a class="nav-play" href="index.html#trial">Enter Rush Island →</a>
+  </nav>
+
+  <section class="page-hero">
+    <div class="grid-lines"></div>
+    <h1 class="page-title">12 Zones.<br><span>Zero Mercy.</span></h1>
+    <p class="page-sub">Every zone was built around a single question: how do we make players rage-quit and immediately click "Try Again"? Here's how we answered it — 12 times.</p>
+  </section>
+
+  <div class="zones-content">
+    <div class="section-label reveal">All Zones</div>
+    <div class="zones-full-grid">
+
+      <div class="zone-big reveal" data-zone="01">
+        <div class="zone-header"><span class="zone-num-big">ZONE 01</span><span class="zone-diff diff-easy">Beginner</span></div>
+        <span class="zone-icon-big">🌋</span>
+        <div class="zone-name-big">Lava Ridge</div>
+        <p class="zone-desc-big">The introduction. Timed platforms over molten gaps. One wrong step sends you back to checkpoint one. Deceptively simple — until the platforms start speeding up at 60 seconds.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">12s</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">3</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">94%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="02">
+        <div class="zone-header"><span class="zone-num-big">ZONE 02</span><span class="zone-diff diff-easy">Beginner</span></div>
+        <span class="zone-icon-big">🌊</span>
+        <div class="zone-name-big">Flood Bay</div>
+        <p class="zone-desc-big">Rising water mechanics combined with vertical climbing. The water doesn't care about your feelings. Reach the top before it does.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">28s</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">2</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">81%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="03">
+        <div class="zone-header"><span class="zone-num-big">ZONE 03</span><span class="zone-diff diff-medium">Intermediate</span></div>
+        <span class="zone-icon-big">🪞</span>
+        <div class="zone-name-big">Mirror Maze</div>
+        <p class="zone-desc-big">Identical corridors with one real exit. Teleport traps every third room. The minimap is deliberately misleading. Most players spend 20+ minutes here.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">23min</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">1</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">62%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="04">
+        <div class="zone-header"><span class="zone-num-big">ZONE 04</span><span class="zone-diff diff-medium">Intermediate</span></div>
+        <span class="zone-icon-big">🕸️</span>
+        <div class="zone-name-big">Gravity Shift</div>
+        <p class="zone-desc-big">Floor becomes ceiling every 15 seconds. Your controls invert. The platforms stay the same but your brain doesn't. First zone with a hidden skip route.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">4min</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">2</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">55%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="05">
+        <div class="zone-header"><span class="zone-num-big">ZONE 05</span><span class="zone-diff diff-medium">Intermediate</span></div>
+        <span class="zone-icon-big">🧊</span>
+        <div class="zone-name-big">Ice Fields</div>
+        <p class="zone-desc-big">Zero friction. Momentum is everything. One overcorrection sends you sliding off the edge. The fastest zone to complete — if you know exactly what you're doing.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">8s</span><span class="zstat-key">Best Clear</span></div>
+          <div class="zstat"><span class="zstat-val">1</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">48%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="06">
+        <div class="zone-header"><span class="zone-num-big">ZONE 06</span><span class="zone-diff diff-hard">Hard</span></div>
+        <span class="zone-icon-big">⚡</span>
+        <div class="zone-name-big">Storm Circuit</div>
+        <p class="zone-desc-big">Electrified platforms that activate in patterns. Memorize the sequence or get cooked. The pattern changes every 30 seconds. No checkpoints in the second half.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">38min</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">1</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">34%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="07">
+        <div class="zone-header"><span class="zone-num-big">ZONE 07</span><span class="zone-diff diff-hard">Hard</span></div>
+        <span class="zone-icon-big">🌪️</span>
+        <div class="zone-name-big">The Ascent</div>
+        <p class="zone-desc-big">Vertical climb with live wind physics and moving platforms. Average clear: 47 seconds. Average attempts before first clear: 31. Don't look down.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">47s</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">0</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">22%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="08">
+        <div class="zone-header"><span class="zone-num-big">ZONE 08</span><span class="zone-diff diff-hard">Hard</span></div>
+        <span class="zone-icon-big">👁️</span>
+        <div class="zone-name-big">The Dark</div>
+        <p class="zone-desc-big">Visibility: 3 blocks. No map. Audio cues only. Players who discover the hidden flashlight item clear it in 4 minutes. Everyone else: good luck.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">52min</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">1</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">18%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="09">
+        <div class="zone-header"><span class="zone-num-big">ZONE 09</span><span class="zone-diff diff-extreme">Extreme</span></div>
+        <span class="zone-icon-big">🌀</span>
+        <div class="zone-name-big">Void Loop</div>
+        <p class="zone-desc-big">The level loops — you'll finish and find yourself at the beginning unless you find the break point. Three real exits. Two fake ones that send you back to Zone 1.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">3hr+</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">0</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">9%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="10">
+        <div class="zone-header"><span class="zone-num-big">ZONE 10</span><span class="zone-diff diff-extreme">Extreme</span></div>
+        <span class="zone-icon-big">💣</span>
+        <div class="zone-name-big">Chain Reaction</div>
+        <p class="zone-desc-big">Step on one platform and 5 others explode. Plan 10 moves ahead or don't play. The puzzle resets entirely if you fall. No checkpoints. No mercy.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">6hr+</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">0</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">7%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big reveal" data-zone="11">
+        <div class="zone-header"><span class="zone-num-big">ZONE 11</span><span class="zone-diff diff-extreme">Extreme</span></div>
+        <span class="zone-icon-big">🌌</span>
+        <div class="zone-name-big">Edge of Everything</div>
+        <p class="zone-desc-big">The last zone before the Final Island. Combines all mechanics from Zones 1–10. One platform. One path. It shifts every 3 seconds. You have been warned.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">?</span><span class="zstat-key">Avg Clear</span></div>
+          <div class="zstat"><span class="zstat-val">0</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">6%</span><span class="zstat-key">Completion</span></div>
+        </div>
+      </div>
+
+      <div class="zone-big secret-zone reveal" data-zone="12">
+        <div class="zone-header"><span class="zone-num-big">ZONE 12</span><span class="zone-diff diff-secret">Legendary</span></div>
+        <span class="zone-icon-big">💀</span>
+        <div class="zone-name-big">Final Island</div>
+        <p class="zone-desc-big">No checkpoints. No retries. You get one shot. Fall once — back to Zone 1. The top 5% who reach it get their name in the Hall of Legends permanently.</p>
+        <div class="zone-stats">
+          <div class="zstat"><span class="zstat-val">5%</span><span class="zstat-key">Reach Rate</span></div>
+          <div class="zstat"><span class="zstat-val">0</span><span class="zstat-key">Checkpoints</span></div>
+          <div class="zstat"><span class="zstat-val">∞</span><span class="zstat-key">Glory</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="cta-bar reveal">
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;">Think you can beat all 12?</div>
+      <div style="color:rgba(254,254,250,0.5);font-size:0.88rem;margin-top:0.4rem;">Only 5% of players ever reach Zone 12. The leaderboard is watching.</div>
+    </div>
+    <a class="btn-play" href="index.html#trial">🎮 Enter Rush Island</a>
+  </div>
+
+  <footer>
+    <div><div class="footer-logo">RUSH ISLAND</div><div style="margin-top:0.4rem;">Rush Island · © 2026</div></div>
+    <div class="footer-links">
+      <a href="index.html">Home</a><a href="leaderboard.html">Leaderboard</a><a href="about.html">About</a>
+    </div>
+  </footer>
+
+  <script>
+    (function(){const el=document.getElementById('online-count');if(!el)return;let base=3284;setInterval(()=>{base+=Math.floor((Math.random()-0.45)*12);base=Math.max(2800,Math.min(4200,base));el.textContent=base.toLocaleString();},4000);})();
+    const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function anim(){cur.style.transform=`translate(${mx-7}px,${my-7}px)`;rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform=`translate(${rx-20}px,${ry-20}px)`;requestAnimationFrame(anim);})();
+    const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.08});
+    document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+  </script>
+</body>
+</html>

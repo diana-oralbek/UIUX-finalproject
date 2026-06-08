@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/dianaoralbek/Downloads/ | grep -E \"\\\\.\\(png|jpg|jpeg|webp\\)\" | head -20)",
+      "Read(//Users/dianaoralbek/Downloads/**)"
+    ]
+  }
+}

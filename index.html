@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rush Island — Only the Boldest Survive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --indigo:  #192A51;
+      --rose:    #EBBAB9;
+      --denim:   #6290C3;
+      --white:   #FEFEFA;
+      --black:   #100C08;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: 'Exo 2', sans-serif; overflow-x: hidden; cursor: none; }
+
+    /* CURSOR */
+    .cursor { width:14px;height:14px;background:var(--rose);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:difference; }
+    .cursor-ring { width:40px;height:40px;border:1.5px solid var(--denim);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:all 0.14s ease; }
+
+    /* NAV */
+    nav {
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:1.2rem 3rem;
+      background:rgba(16,12,8,0.55);backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(235,186,185,0.1);
+    }
+    .nav-logo {
+      font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;
+      color:var(--white);text-decoration:none;letter-spacing:0.12em;
+      display:flex;align-items:center;gap:0.6rem;
+    }
+    .nav-logo-img { height:36px;width:36px;object-fit:contain;border-radius:4px; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+    .nav-links { display:flex;gap:2rem;list-style:none; }
+    .nav-links a { color:rgba(254,254,250,0.55);text-decoration:none;font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;transition:color 0.2s; }
+    .nav-links a:hover { color:var(--rose); }
+    .nav-play {
+      font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;
+      background:var(--rose);color:var(--black);padding:0.6rem 1.4rem;text-decoration:none;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      transition:background 0.2s,transform 0.2s;
+    }
+    .nav-play:hover { background:var(--white);transform:translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height:100vh;position:relative;overflow:hidden;
+      display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+      padding:0 5rem;
+    }
+    /* hero background */
+    .hero-bg {
+      position:absolute;inset:0;z-index:0;
+      background:
+        linear-gradient(to right, rgba(6,8,18,0.88) 0%, rgba(6,8,18,0.6) 45%, rgba(6,8,18,0.15) 100%),
+        linear-gradient(to bottom, rgba(6,8,18,0.5) 0%, transparent 20%, transparent 80%, rgba(6,8,18,0.7) 100%),
+        url('hero-bg.png') center/cover no-repeat,
+        #080a1a;
+    }
+    /* stars */
+    .stars-layer {
+      position:absolute;inset:0;z-index:1;
+      background-image:
+        radial-gradient(1.5px 1.5px at 8% 12%,  rgba(254,254,250,0.5) 0%,transparent 100%),
+        radial-gradient(1px   1px   at 22% 5%,   rgba(254,254,250,0.3) 0%,transparent 100%),
+        radial-gradient(2px   2px   at 75% 8%,   rgba(235,186,185,0.4) 0%,transparent 100%),
+        radial-gradient(1px   1px   at 90% 20%,  rgba(254,254,250,0.25) 0%,transparent 100%),
+        radial-gradient(1.5px 1.5px at 45% 3%,   rgba(98,144,195,0.4)  0%,transparent 100%),
+        radial-gradient(1px   1px   at 60% 90%,  rgba(254,254,250,0.3) 0%,transparent 100%),
+        radial-gradient(1.5px 1.5px at 30% 85%,  rgba(254,254,250,0.25) 0%,transparent 100%),
+        radial-gradient(1px   1px   at 5%  55%,  rgba(254,254,250,0.2)0%,transparent 100%),
+        radial-gradient(1px   1px   at 95% 50%,  rgba(98,144,195,0.3)  0%,transparent 100%);
+      animation:starDrift 25s linear infinite alternate;
+    }
+    @keyframes starDrift { from{transform:translateY(0) translateX(0)} to{transform:translateY(-15px) translateX(5px)} }
+
+    /* grid overlay */
+    .grid-overlay {
+      position:absolute;inset:0;z-index:1;
+      background-image:
+        linear-gradient(rgba(98,144,195,0.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(98,144,195,0.04) 1px,transparent 1px);
+      background-size:70px 70px;
+    }
+
+    /* floating island visual */
+    .island-visual {
+      position:absolute;right:3%;top:50%;transform:translateY(-50%);
+      width:min(520px,45vw);aspect-ratio:1;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .island-glow {
+      position:absolute;inset:-20%;
+      background:radial-gradient(ellipse,rgba(98,144,195,0.25) 0%,transparent 65%);
+      animation:glowPulse 4s ease infinite;
+    }
+    @keyframes glowPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+    .island-ring {
+      position:absolute;inset:5%;
+      border:1px solid rgba(98,144,195,0.15);border-radius:50%;
+      animation:ringRotate 20s linear infinite;
+    }
+    .island-ring2 {
+      position:absolute;inset:15%;
+      border:1px solid rgba(235,186,185,0.1);border-radius:50%;
+      animation:ringRotate 14s linear infinite reverse;
+    }
+    @keyframes ringRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .island-emoji {
+      font-size:clamp(6rem,12vw,10rem);
+      filter:drop-shadow(0 0 40px rgba(98,144,195,0.6)) drop-shadow(0 0 80px rgba(98,144,195,0.3));
+      animation:islandFloat 5s ease-in-out infinite;
+      position:relative;z-index:1;
+    }
+    @keyframes islandFloat { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-18px) rotate(2deg)} }
+
+    /* hero text */
+    .hero-content { position:relative;z-index:2;max-width:680px; }
+    .hero-badge {
+      display:inline-flex;align-items:center;gap:0.6rem;
+      font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;
+      color:var(--rose);margin-bottom:1.8rem;
+      animation:fadeUp 0.7s ease both;
+    }
+    .hero-badge-dot { width:6px;height:6px;background:var(--rose);border-radius:50%;animation:pulse 1.5s ease infinite; }
+    .hero-title {
+      font-family:'Orbitron',monospace;font-weight:900;
+      font-size:clamp(3.5rem,8vw,7.5rem);
+      line-height:0.9;letter-spacing:-0.02em;
+      animation:fadeUp 0.7s 0.1s ease both;
+    }
+    .hero-title .t-rose { color:var(--rose); }
+    .hero-title .t-denim { color:var(--denim); }
+    .hero-tagline {
+      font-size:clamp(1rem,2vw,1.2rem);
+      line-height:1.6;color:rgba(254,254,250,0.55);
+      margin-top:1.5rem;
+      animation:fadeUp 0.7s 0.2s ease both;
+    }
+    .hero-tagline strong { color:var(--white); }
+    .hero-actions {
+      display:flex;gap:1rem;margin-top:2.5rem;
+      animation:fadeUp 0.7s 0.35s ease both;
+    }
+    .btn-play {
+      font-family:'Orbitron',monospace;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--rose);color:var(--black);padding:1rem 2.2rem;text-decoration:none;
+      clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);
+      transition:all 0.25s;font-weight:700;
+    }
+    .btn-play:hover { background:var(--white);transform:translateY(-2px); }
+    .btn-watch {
+      font-family:'Orbitron',monospace;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;
+      border:1px solid rgba(98,144,195,0.4);color:var(--denim);
+      padding:1rem 2rem;text-decoration:none;transition:all 0.25s;
+    }
+    .btn-watch:hover { border-color:var(--rose);color:var(--rose); }
+    .hero-stats {
+      display:flex;gap:2.5rem;margin-top:3rem;
+      animation:fadeUp 0.7s 0.45s ease both;
+    }
+    .hstat { display:flex;flex-direction:column;gap:0.15rem; }
+    .hstat-num { font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;color:var(--white); }
+    .hstat-label { font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(254,254,250,0.35); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    /* scroll hint */
+    .scroll-hint {
+      position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+      display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+      font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;
+      color:rgba(254,254,250,0.25);
+    }
+    .scroll-line { width:1px;height:50px;background:linear-gradient(to bottom,var(--denim),transparent);animation:scrollAnim 2s ease infinite; }
+    @keyframes scrollAnim { 0%,100%{opacity:0.2} 50%{opacity:0.8} }
+
+    /* MARQUEE */
+    .marquee { background:var(--rose);padding:0.75rem 0;overflow:hidden;white-space:nowrap; }
+    .marquee-track { display:inline-block;animation:marquee 16s linear infinite; }
+    .marquee-track span {
+      font-family:'Orbitron',monospace;font-size:0.68rem;font-weight:700;
+      letter-spacing:0.2em;text-transform:uppercase;color:var(--black);margin:0 2rem;
+    }
+    .marquee-track span::before { content:'✦  '; }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* SECTIONS COMMON */
+    .section-label {
+      font-size:0.65rem;letter-spacing:0.28em;text-transform:uppercase;
+      color:var(--rose);margin-bottom:0.8rem;
+      display:flex;align-items:center;gap:0.6rem;
+    }
+    .section-label::before { content:'';width:1.8rem;height:1px;background:var(--rose); }
+    .section-title {
+      font-family:'Orbitron',monospace;font-weight:700;
+      font-size:clamp(1.8rem,3.5vw,3rem);line-height:1.1;
+    }
+    .section-body { font-size:0.95rem;line-height:1.85;color:rgba(254,254,250,0.6); }
+    .divider { width:100%;height:1px;background:linear-gradient(to right,transparent,rgba(98,144,195,0.3),transparent);margin:5rem 0; }
+
+    /* HOW IT WORKS */
+    .how { padding:6rem 5rem;background:var(--black);position:relative;overflow:hidden; }
+    .how::before {
+      content:'PLAY';position:absolute;right:-2rem;top:50%;transform:translateY(-50%);
+      font-family:'Orbitron',monospace;font-size:14rem;font-weight:900;
+      color:rgba(254,254,250,0.02);pointer-events:none;letter-spacing:-0.04em;
+    }
+    .how-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:3.5rem; }
+    .how-card {
+      background:rgba(25,42,81,0.25);border:1px solid rgba(98,144,195,0.15);
+      padding:2.5rem 2rem;position:relative;transition:all 0.3s;
+    }
+    .how-card:hover { background:rgba(25,42,81,0.5);border-color:var(--rose); transform:translateY(-4px); }
+    .how-step {
+      font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:0.2em;
+      color:rgba(254,254,250,0.2);margin-bottom:1.2rem;
+    }
+    .how-icon { font-size:2.2rem;margin-bottom:1rem;display:block; }
+    .how-title { font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--rose);margin-bottom:0.7rem; }
+    .how-text { font-size:0.88rem;line-height:1.75;color:rgba(254,254,250,0.55); }
+
+    /* ZONES */
+    .zones { padding:6rem 5rem;background:var(--indigo);position:relative;overflow:hidden; }
+    .zones-intro { display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:end;margin-bottom:3.5rem; }
+    .zones-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:1px; }
+    .zone-card {
+      background:rgba(16,12,8,0.55);border:1px solid rgba(98,144,195,0.1);
+      padding:2rem 1.5rem;transition:all 0.3s;cursor:default;position:relative;overflow:hidden;
+    }
+    .zone-card::after {
+      content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+      background:var(--rose);transform:scaleX(0);transform-origin:left;
+      transition:transform 0.3s;
+    }
+    .zone-card:hover { background:rgba(25,42,81,0.6);border-color:rgba(98,144,195,0.3); }
+    .zone-card:hover::after { transform:scaleX(1); }
+    .zone-num { font-family:'Orbitron',monospace;font-size:0.6rem;color:rgba(254,254,250,0.2);letter-spacing:0.15em;margin-bottom:0.6rem; }
+    .zone-icon { font-size:1.8rem;margin-bottom:0.8rem;display:block; }
+    .zone-name { font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:var(--white);margin-bottom:0.5rem; }
+    .zone-diff {
+      display:inline-block;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;
+      padding:0.2rem 0.6rem;border:1px solid;margin-bottom:0.7rem;
+    }
+    .diff-easy { color:#4ade80;border-color:rgba(74,222,128,0.3); }
+    .diff-medium { color:var(--denim);border-color:rgba(98,144,195,0.3); }
+    .diff-hard { color:var(--rose);border-color:rgba(235,186,185,0.3); }
+    .diff-extreme { color:#f97316;border-color:rgba(249,115,22,0.3); }
+    .zone-desc { font-size:0.78rem;line-height:1.6;color:rgba(254,254,250,0.45); }
+
+    /* COMMUNITY */
+    .community { padding:6rem 5rem;background:var(--black); }
+    .community-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem; }
+    .review-card {
+      background:rgba(25,42,81,0.3);border:1px solid rgba(98,144,195,0.15);
+      padding:2rem;transition:all 0.3s;
+    }
+    .review-card:hover { border-color:rgba(235,186,185,0.3);transform:translateY(-3px); }
+    .review-top { display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem; }
+    .review-avatar {
+      width:40px;height:40px;border-radius:50%;
+      background:var(--indigo);border:1px solid rgba(98,144,195,0.3);
+      display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+      flex-shrink:0;
+    }
+    .review-name { font-family:'Orbitron',monospace;font-size:0.78rem;font-weight:700;color:var(--white); }
+    .review-island { font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--denim);margin-top:0.1rem; }
+    .review-stars { color:var(--rose);font-size:0.8rem;letter-spacing:0.1em;margin-bottom:0.8rem; }
+    .review-text { font-size:0.88rem;line-height:1.75;color:rgba(254,254,250,0.6);font-style:italic; }
+
+    /* EMAIL / EVENTS */
+    .events { padding:6rem 5rem;background:var(--indigo);position:relative;overflow:hidden; }
+    .events::before {
+      content:'';position:absolute;top:-50%;right:-20%;width:500px;height:500px;
+      background:radial-gradient(circle,rgba(98,144,195,0.12) 0%,transparent 65%);
+      pointer-events:none;
+    }
+    .events-grid { display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-top:3.5rem; }
+    .event-list { display:flex;flex-direction:column;gap:1px; }
+    .event-item {
+      display:grid;grid-template-columns:60px 1fr;gap:1.5rem;align-items:center;
+      padding:1.5rem;border:1px solid rgba(98,144,195,0.12);background:rgba(16,12,8,0.4);
+      transition:all 0.25s;
+    }
+    .event-item:hover { border-color:var(--rose);background:rgba(16,12,8,0.7); }
+    .event-time { font-family:'Orbitron',monospace;font-size:0.65rem;color:var(--rose);text-align:center;line-height:1.3; }
+    .event-name { font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:var(--white); }
+    .event-desc { font-size:0.78rem;color:rgba(254,254,250,0.5);margin-top:0.2rem; }
+    .email-box { background:rgba(16,12,8,0.5);border:1px solid rgba(98,144,195,0.2);padding:3rem; }
+    .email-title { font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;margin-bottom:0.8rem; }
+    .email-title span { color:var(--rose); }
+    .email-sub { font-size:0.88rem;line-height:1.7;color:rgba(254,254,250,0.55);margin-bottom:2rem; }
+    .email-form { display:flex;flex-direction:column;gap:1rem; }
+    .email-input {
+      background:rgba(25,42,81,0.4);border:1px solid rgba(98,144,195,0.2);
+      color:var(--white);font-family:'Exo 2',sans-serif;font-size:0.9rem;
+      padding:0.85rem 1rem;outline:none;transition:border-color 0.2s;
+    }
+    .email-input:focus { border-color:var(--rose); }
+    .email-input::placeholder { color:rgba(254,254,250,0.25); }
+    .btn-subscribe {
+      font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--rose);color:var(--black);padding:0.9rem;border:none;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      cursor:pointer;transition:background 0.2s;font-weight:700;
+    }
+    .btn-subscribe:hover { background:var(--white); }
+
+    /* SECRETS */
+    .secrets { padding:6rem 5rem;background:var(--black);text-align:center; }
+    .secrets-inner { max-width:700px;margin:0 auto; }
+    .secrets-icon { font-size:4rem;margin-bottom:1.5rem;display:block;filter:drop-shadow(0 0 20px rgba(235,186,185,0.5)); }
+    .secrets-items { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:3rem;text-align:left; }
+    .secret-card {
+      background:rgba(25,42,81,0.3);border:1px solid rgba(235,186,185,0.1);
+      padding:1.5rem;transition:all 0.25s;
+    }
+    .secret-card:hover { border-color:var(--rose);transform:translateY(-3px); }
+    .secret-lock { font-size:1.4rem;margin-bottom:0.6rem;display:block; }
+    .secret-title { font-family:'Orbitron',monospace;font-size:0.8rem;font-weight:700;color:var(--rose);margin-bottom:0.4rem; }
+    .secret-text { font-size:0.78rem;line-height:1.6;color:rgba(254,254,250,0.5); }
+
+    /* CTA FINAL */
+    .cta-final {
+      padding:7rem 5rem;
+      background:linear-gradient(135deg,var(--indigo) 0%,#0d1a30 100%);
+      text-align:center;position:relative;overflow:hidden;
+    }
+    .cta-final::before {
+      content:'RUSH ISLAND';position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      font-family:'Orbitron',monospace;font-size:clamp(3rem,8vw,8rem);font-weight:900;
+      color:rgba(254,254,250,0.03);white-space:nowrap;pointer-events:none;
+    }
+    .cta-final-title {
+      font-family:'Orbitron',monospace;font-size:clamp(2rem,5vw,4rem);font-weight:900;
+      line-height:1.1;position:relative;z-index:1;margin-bottom:1.2rem;
+    }
+    .cta-final-title span { color:var(--rose); }
+    .cta-final-sub { font-size:1rem;color:rgba(254,254,250,0.55);max-width:480px;margin:0 auto 2.5rem;position:relative;z-index:1; }
+    .cta-actions { display:flex;justify-content:center;gap:1rem;position:relative;z-index:1; }
+
+    /* FOOTER */
+    footer {
+      background:var(--black);padding:2rem 5rem;
+      display:flex;justify-content:space-between;align-items:center;
+      border-top:1px solid rgba(98,144,195,0.1);
+      font-size:0.72rem;color:rgba(254,254,250,0.25);
+    }
+    .footer-logo { font-family:'Orbitron',monospace;font-weight:900;font-size:0.9rem;color:var(--white);letter-spacing:0.1em; }
+    .footer-links { display:flex;gap:2rem; }
+    .footer-links a { color:rgba(254,254,250,0.3);text-decoration:none;transition:color 0.2s; }
+    .footer-links a:hover { color:var(--rose); }
+
+    /* REVEAL */
+    .reveal { opacity:0;transform:translateY(35px);transition:all 0.7s ease; }
+    .reveal.visible { opacity:1;transform:translateY(0); }
+    .reveal-delay { transition-delay:0.15s; }
+    .reveal-delay2 { transition-delay:0.3s; }
+
+    /* ISLAND TRIAL */
+    .trial-section { padding:6rem 5rem;background:var(--indigo);position:relative;overflow:hidden;text-align:center; }
+    .trial-section::before {
+      content:'TRIAL';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+      font-family:'Orbitron',monospace;font-size:16rem;font-weight:900;
+      color:rgba(254,254,250,0.015);pointer-events:none;white-space:nowrap;
+    }
+    .trial-intro { max-width:620px;margin:0 auto 3rem; }
+    .trial-intro .section-body { margin-top:1rem; }
+    .trial-tags { display:flex;justify-content:center;gap:1rem;margin-top:1.5rem;flex-wrap:wrap; }
+    .trial-tag {
+      font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;
+      border:1px solid rgba(98,144,195,0.3);color:var(--denim);
+      padding:0.3rem 0.8rem;
+    }
+    .btn-trial {
+      font-family:'Orbitron',monospace;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--rose);color:var(--black);padding:1.1rem 2.6rem;border:none;
+      clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);
+      cursor:pointer;transition:all 0.25s;font-weight:700;margin-top:2rem;font-size:0.82rem;
+    }
+    .btn-trial:hover { background:var(--white);transform:translateY(-2px); }
+
+    /* TRIAL OVERLAY */
+    #trial-overlay {
+      position:fixed;inset:0;z-index:1000;
+      background:rgba(16,12,8,0.97);
+      display:none;flex-direction:column;align-items:center;justify-content:center;
+      padding:2rem;
+    }
+    #trial-overlay.active { display:flex; }
+    .trial-close {
+      position:absolute;top:2rem;right:2.5rem;
+      font-family:'Orbitron',monospace;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;
+      color:rgba(254,254,250,0.3);cursor:pointer;background:none;border:none;
+      transition:color 0.2s;
+    }
+    .trial-close:hover { color:var(--rose); }
+    .trial-steps {
+      display:flex;gap:0.6rem;margin-bottom:3rem;
+    }
+    .trial-step-dot {
+      width:8px;height:8px;border-radius:50%;
+      background:rgba(254,254,250,0.15);transition:background 0.3s;
+    }
+    .trial-step-dot.active { background:var(--rose); }
+    .trial-step-dot.done { background:var(--denim); }
+
+    .trial-stage {
+      display:none;flex-direction:column;align-items:center;text-align:center;
+      max-width:560px;width:100%;
+    }
+    .trial-stage.show { display:flex; }
+    .trial-stage-label {
+      font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;
+      color:var(--denim);margin-bottom:0.8rem;
+    }
+    .trial-stage-title {
+      font-family:'Orbitron',monospace;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:700;
+      line-height:1.1;margin-bottom:0.8rem;
+    }
+    .trial-stage-desc {
+      font-size:0.88rem;line-height:1.7;color:rgba(254,254,250,0.55);
+      margin-bottom:2rem;max-width:400px;
+    }
+
+    /* Stage 1 — reaction dot */
+    #reaction-arena {
+      width:220px;height:220px;border-radius:50%;
+      background:rgba(25,42,81,0.4);border:2px solid rgba(98,144,195,0.2);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all 0.2s;position:relative;
+      user-select:none;
+    }
+    #reaction-arena:hover { border-color:rgba(98,144,195,0.4); }
+    #reaction-arena.waiting { background:rgba(235,186,185,0.05);border-color:rgba(235,186,185,0.2); }
+    #reaction-arena.ready { background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.5);cursor:crosshair; }
+    #reaction-arena.clicked { background:rgba(98,144,195,0.15); }
+    .reaction-label {
+      font-family:'Orbitron',monospace;font-size:0.75rem;letter-spacing:0.1em;
+      color:rgba(254,254,250,0.4);pointer-events:none;
+    }
+    #reaction-dot {
+      position:absolute;width:56px;height:56px;border-radius:50%;
+      transition:background 0.15s, box-shadow 0.15s;
+    }
+    #reaction-dot.gray { background:rgba(254,254,250,0.1);box-shadow:none; }
+    #reaction-dot.green { background:rgba(74,222,128,0.9);box-shadow:0 0 24px rgba(74,222,128,0.6); }
+
+    /* Stage 2 — timing bar */
+    #timing-track {
+      width:100%;max-width:440px;height:52px;
+      background:rgba(25,42,81,0.4);border:1px solid rgba(98,144,195,0.2);
+      position:relative;overflow:hidden;cursor:pointer;
+      margin-bottom:1rem;
+    }
+    #timing-zone {
+      position:absolute;top:0;height:100%;
+      background:rgba(74,222,128,0.18);border-left:1px solid rgba(74,222,128,0.4);border-right:1px solid rgba(74,222,128,0.4);
+    }
+    #timing-bar {
+      position:absolute;top:0;width:4px;height:100%;
+      background:var(--rose);box-shadow:0 0 12px rgba(235,186,185,0.8);
+      transition:none;
+    }
+    .timing-hint { font-size:0.72rem;color:rgba(254,254,250,0.35);letter-spacing:0.1em; }
+
+    /* Stage 3 — pattern tiles */
+    #pattern-grid {
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;
+      width:220px;height:220px;margin-bottom:1rem;
+    }
+    .ptile {
+      border-radius:4px;cursor:pointer;
+      transition:all 0.12s;user-select:none;
+    }
+    .ptile[data-i="0"] { background:rgba(235,186,185,0.18);border:1px solid rgba(235,186,185,0.25); }
+    .ptile[data-i="1"] { background:rgba(98,144,195,0.18);border:1px solid rgba(98,144,195,0.25); }
+    .ptile[data-i="2"] { background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.2); }
+    .ptile[data-i="3"] { background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.2); }
+    .ptile.lit[data-i="0"] { background:rgba(235,186,185,0.85);box-shadow:0 0 20px rgba(235,186,185,0.5); }
+    .ptile.lit[data-i="1"] { background:rgba(98,144,195,0.9);box-shadow:0 0 20px rgba(98,144,195,0.5); }
+    .ptile.lit[data-i="2"] { background:rgba(74,222,128,0.85);box-shadow:0 0 20px rgba(74,222,128,0.5); }
+    .ptile.lit[data-i="3"] { background:rgba(249,115,22,0.85);box-shadow:0 0 20px rgba(249,115,22,0.5); }
+    .ptile.wrong { background:rgba(200,50,50,0.7)!important;box-shadow:0 0 16px rgba(200,50,50,0.5)!important; }
+    .pattern-hint { font-size:0.72rem;color:rgba(254,254,250,0.35);letter-spacing:0.1em;margin-top:0.5rem; }
+
+    /* Results screen */
+    #trial-results {
+      display:none;flex-direction:column;align-items:center;text-align:center;
+      max-width:600px;width:100%;
+    }
+    #trial-results.show { display:flex; }
+    .result-dna-wrap { position:relative;margin-bottom:2rem; }
+    #dna-canvas { border-radius:50%;border:1px solid rgba(98,144,195,0.2); }
+    .result-score-ring {
+      position:absolute;inset:-10px;border-radius:50%;
+      border:2px solid rgba(235,186,185,0.15);
+    }
+    .result-score {
+      font-family:'Orbitron',monospace;font-size:3.5rem;font-weight:900;
+      color:var(--rose);line-height:1;margin-bottom:0.3rem;
+    }
+    .result-score-label { font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(254,254,250,0.3);margin-bottom:1.5rem; }
+    .result-type {
+      font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;
+      color:var(--denim);margin-bottom:0.4rem;
+    }
+    .result-zone {
+      font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;
+      color:var(--rose);margin-bottom:1.5rem;
+    }
+    .result-desc { font-size:0.9rem;line-height:1.7;color:rgba(254,254,250,0.55);max-width:420px;margin-bottom:2rem; }
+    .result-breakdown {
+      display:flex;gap:2rem;margin-bottom:2rem;
+    }
+    .rb-item { display:flex;flex-direction:column;gap:0.2rem;align-items:center; }
+    .rb-val { font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;color:var(--white); }
+    .rb-key { font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(254,254,250,0.3); }
+    .result-actions { display:flex;gap:1rem; }
+    .btn-retry {
+      font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;
+      border:1px solid rgba(98,144,195,0.3);color:var(--denim);
+      padding:0.8rem 1.6rem;background:none;cursor:pointer;transition:all 0.2s;
+    }
+    .btn-retry:hover { border-color:var(--rose);color:var(--rose); }
+    .btn-explore {
+      font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;
+      background:var(--rose);color:var(--black);padding:0.8rem 1.8rem;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      border:none;cursor:pointer;transition:all 0.2s;font-weight:700;text-decoration:none;
+    }
+    .btn-explore:hover { background:var(--white); }
+
+    /* SQUAD STRIP */
+    .squad-strip{
+      background:rgba(12,16,34,0.9);
+      border-top:1px solid rgba(98,144,195,0.08);
+      border-bottom:1px solid rgba(98,144,195,0.1);
+      padding:1.6rem 5rem 1.8rem;
+    }
+    .squad-section-title{
+      font-family:'Orbitron',monospace;font-size:0.88rem;font-weight:700;
+      color:var(--white);margin-bottom:1.1rem;cursor:pointer;
+      letter-spacing:0.06em;
+    }
+    .squad-section-title span{color:var(--rose);}
+    .squad-row{display:flex;gap:1.4rem;overflow-x:auto;padding-bottom:0.3rem;}
+    .squad-row::-webkit-scrollbar{height:3px;}
+    .squad-row::-webkit-scrollbar-thumb{background:rgba(98,144,195,0.3);border-radius:2px;}
+    .squad-av{display:flex;flex-direction:column;align-items:center;gap:0.35rem;cursor:pointer;flex-shrink:0;width:68px;}
+    .squad-av-ring{width:58px;height:58px;border-radius:50%;background:rgba(25,42,81,0.6);border:2px solid rgba(98,144,195,0.25);display:flex;align-items:center;justify-content:center;font-size:1.4rem;position:relative;transition:all 0.2s;}
+    .squad-av:hover .squad-av-ring{border-color:var(--rose);transform:translateY(-2px);}
+    .squad-online-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;background:#4ade80;border-radius:50%;border:2px solid #100C08;}
+    .squad-av-name{font-size:0.62rem;color:rgba(254,254,250,0.65);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .squad-av-zone{font-size:0.5rem;color:var(--denim);text-align:center;}
+    .squad-add-btn .squad-av-ring{background:rgba(25,42,81,0.3);border:1.5px dashed rgba(98,144,195,0.3);color:rgba(254,254,250,0.3);font-size:1.3rem;}
+    .squad-add-btn:hover .squad-av-ring{border-color:var(--denim);color:var(--denim);}
+
+    /* FEED SECTION HEADER */
+    .feed-section{padding:3.5rem 5rem;}
+    .feed-section.dark{background:var(--black);}
+    .feed-section.mid{background:rgba(16,22,48,0.4);}
+    .feed-section.first-catalog{padding-top:4rem;padding-bottom:4rem;}
+    .feed-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.8rem;}
+    .feed-left{}
+    .feed-title{
+      font-family:'Orbitron',monospace;font-size:1.35rem;font-weight:700;
+      color:var(--white);cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;
+      letter-spacing:0.04em;
+    }
+    .feed-title:hover{color:var(--rose);}
+    .feed-title-arrow{color:var(--rose);}
+    .feed-sub{font-size:0.76rem;color:rgba(254,254,250,0.38);margin-top:0.3rem;letter-spacing:0.02em;}
+    .feed-see-all{
+      font-size:0.7rem;color:var(--denim);text-decoration:none;transition:color 0.2s;
+      letter-spacing:0.12em;text-transform:uppercase;font-family:'Orbitron',monospace;
+      padding-bottom:2px;border-bottom:1px solid rgba(98,144,195,0.3);
+    }
+    .feed-see-all:hover{color:var(--rose);border-color:rgba(235,186,185,0.4);}
+
+    /* GAME CARD */
+    .feed-grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:1.5rem;}
+    .feed-grid-5.two-rows{row-gap:2.5rem;}
+    .game-card{cursor:pointer;transition:transform 0.22s;}
+    .game-card:hover{transform:translateY(-6px);}
+    .game-thumb{
+      width:100%;aspect-ratio:4/3;border-radius:6px;
+      background:linear-gradient(135deg,rgba(25,42,81,0.55) 0%,rgba(14,22,48,0.7) 100%);
+      border:1px solid rgba(98,144,195,0.12);
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;margin-bottom:0.75rem;position:relative;
+      transition:border-color 0.25s,box-shadow 0.25s;
+    }
+    .game-card:hover .game-thumb{
+      border-color:rgba(235,186,185,0.35);
+      box-shadow:0 8px 28px rgba(0,0,0,0.5),0 0 0 1px rgba(235,186,185,0.1);
+    }
+    .game-thumb img{width:100%;height:100%;object-fit:cover;border-radius:5px;display:block;}
+    .game-thumb-icon{font-size:2.8rem;opacity:0.22;}
+    .game-badge{position:absolute;top:7px;left:7px;font-family:'Orbitron',monospace;font-size:0.44rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:2px;font-weight:700;}
+    .badge-live{background:rgba(220,38,38,0.9);color:#fff;}
+    .badge-new{background:rgba(74,222,128,0.9);color:#000;}
+    .badge-hot{background:rgba(249,115,22,0.9);color:#fff;}
+    .badge-event{background:rgba(168,85,247,0.9);color:#fff;}
+    .badge-season{background:rgba(235,186,185,0.9);color:#000;}
+    .game-name{font-size:0.92rem;font-weight:700;color:var(--white);line-height:1.3;margin-bottom:0.32rem;}
+    .game-meta{display:flex;gap:0.9rem;font-size:0.72rem;color:rgba(254,254,250,0.45);}
+
+    /* RUSH TRIALS CATALOG */
+    .rush-trials{padding:3.5rem 5rem;background:rgba(16,22,48,0.4);}
+    .trials-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.8rem;}
+    .trials-title{font-family:'Orbitron',monospace;font-size:1.35rem;font-weight:700;color:var(--white);cursor:pointer;letter-spacing:0.04em;}
+    .trials-title:hover{color:var(--rose);}
+    .trials-arrow{color:var(--rose);margin-left:0.3rem;}
+    .trials-sub{font-size:0.76rem;color:rgba(254,254,250,0.38);margin-top:0.3rem;}
+    .trials-view-all{font-size:0.72rem;color:var(--denim);text-decoration:none;transition:color 0.2s;}
+    .trials-view-all:hover{color:var(--rose);}
+    .trials-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1.3rem;}
+    .trial-game-card{cursor:pointer;transition:transform 0.22s;}
+    .trial-game-card:hover{transform:translateY(-5px);}
+    .trial-game-thumb{
+      width:100%;aspect-ratio:4/3;border-radius:6px;
+      background:linear-gradient(135deg,rgba(25,42,81,0.55) 0%,rgba(14,22,48,0.7) 100%);
+      border:1px solid rgba(98,144,195,0.12);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+      margin-bottom:0.75rem;position:relative;transition:border-color 0.25s,box-shadow 0.25s;
+    }
+    .trial-game-card:hover .trial-game-thumb{border-color:rgba(235,186,185,0.35);box-shadow:0 8px 28px rgba(0,0,0,0.5);}
+    .trial-game-thumb img{width:100%;height:100%;object-fit:cover;border-radius:5px;display:block;}
+    .thumb-icon{font-size:2.8rem;opacity:0.22;}
+    .trial-game-name{font-size:0.92rem;font-weight:700;color:var(--white);margin-bottom:0.32rem;line-height:1.3;}
+    .trial-game-meta{display:flex;gap:0.9rem;font-size:0.72rem;color:rgba(254,254,250,0.45);}
+
+    /* NAV ONLINE COUNTER */
+    .nav-online {
+      display:flex;align-items:center;gap:0.45rem;
+      font-size:0.68rem;letter-spacing:0.1em;color:rgba(254,254,250,0.45);
+      margin-right:1rem;
+    }
+    .online-dot {
+      width:6px;height:6px;border-radius:50%;background:#4ade80;
+      box-shadow:0 0 6px rgba(74,222,128,0.8);
+      animation:pulse 2s ease infinite;
+    }
+    #online-count { color:#4ade80;font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700; }
+
+    /* RUSH PASS — BATTLE PASS */
+    .rush-pass {
+      padding:6rem 5rem;background:var(--black);position:relative;overflow:hidden;
+    }
+    .rush-pass::before {
+      content:'PASS';position:absolute;right:-2rem;top:50%;transform:translateY(-50%);
+      font-family:'Orbitron',monospace;font-size:14rem;font-weight:900;
+      color:rgba(254,254,250,0.02);pointer-events:none;
+    }
+    .pass-header { margin-bottom:3rem; }
+    .pass-header .section-body { margin-top:0.8rem;max-width:520px; }
+    .pass-season-badge {
+      display:inline-flex;align-items:center;gap:0.5rem;
+      background:rgba(235,186,185,0.1);border:1px solid rgba(235,186,185,0.25);
+      padding:0.35rem 0.9rem;font-size:0.62rem;letter-spacing:0.2em;
+      text-transform:uppercase;color:var(--rose);margin-top:1rem;
+    }
+    .pass-tracks {
+      display:flex;flex-direction:column;gap:0;
+      border:1px solid rgba(98,144,195,0.15);
+    }
+    .pass-row {
+      display:flex;align-items:stretch;
+    }
+    .pass-tier-label {
+      width:110px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Orbitron',monospace;font-size:0.58rem;font-weight:700;
+      letter-spacing:0.18em;
+      border-right:1px solid rgba(98,144,195,0.15);
+      padding:1rem 0.5rem;
+    }
+    .pass-premium .pass-tier-label {
+      background:rgba(235,186,185,0.07);color:var(--rose);
+      border-bottom:1px solid rgba(98,144,195,0.1);
+    }
+    .pass-free .pass-tier-label { background:rgba(25,42,81,0.2);color:var(--denim); }
+    .pass-tiles { display:flex;flex:1; }
+    .pass-tile {
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:1rem 0.5rem;gap:0.3rem;
+      border-right:1px solid rgba(98,144,195,0.08);
+      font-size:1.3rem;position:relative;transition:all 0.2s;
+      cursor:default;
+    }
+    .pass-tile:last-child { border-right:none; }
+    .pass-tile .tile-label {
+      font-size:0.5rem;letter-spacing:0.12em;text-transform:uppercase;
+      color:rgba(254,254,250,0.25);line-height:1.2;text-align:center;
+    }
+    .pass-premium .pass-tile { border-bottom:1px solid rgba(98,144,195,0.08); }
+    .pass-tile.unlocked { background:rgba(25,42,81,0.3); }
+    .pass-tile.unlocked:hover { background:rgba(25,42,81,0.55);transform:translateY(-2px); }
+    .pass-tile.locked { opacity:0.35;filter:grayscale(0.6); }
+    .pass-tile.locked::after {
+      content:'🔒';font-size:0.7rem;position:absolute;bottom:4px;right:4px;
+    }
+    .pass-tile.special {
+      background:linear-gradient(135deg,rgba(235,186,185,0.15),rgba(98,144,195,0.1));
+      border:1px solid rgba(235,186,185,0.2);
+      font-family:'Orbitron',monospace;font-size:0.55rem;font-weight:700;
+      color:var(--rose);letter-spacing:0.1em;
+    }
+    .pass-tile.special.locked { opacity:0.5; }
+
+    .pass-progress-wrap {
+      padding:0.6rem 0;background:rgba(25,42,81,0.18);
+      border-top:1px solid rgba(98,144,195,0.1);
+      border-bottom:1px solid rgba(98,144,195,0.1);
+      position:relative;overflow:hidden;
+    }
+    .pass-progress-bar {
+      height:3px;background:linear-gradient(to right,var(--rose),var(--denim));
+      width:var(--prog);transition:width 1s ease;
+      box-shadow:0 0 8px rgba(235,186,185,0.5);
+    }
+    .pass-levels {
+      display:flex;justify-content:space-between;padding:0.3rem 0.5rem 0;
+      font-size:0.5rem;letter-spacing:0.12em;text-transform:uppercase;
+      color:rgba(254,254,250,0.2);font-family:'Orbitron',monospace;
+    }
+
+    .pass-bottom {
+      display:flex;align-items:center;justify-content:space-between;
+      margin-top:2.5rem;flex-wrap:wrap;gap:1.5rem;
+    }
+    .pass-upgrade-card {
+      display:flex;align-items:center;gap:2rem;
+      background:rgba(235,186,185,0.06);border:1px solid rgba(235,186,185,0.15);
+      padding:1.5rem 2rem;
+    }
+    .pass-price { font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;color:var(--rose); }
+    .pass-price-label { font-size:0.72rem;color:rgba(254,254,250,0.45);margin-top:0.2rem;letter-spacing:0.06em; }
+    .pass-note { font-size:0.78rem;color:rgba(254,254,250,0.4);line-height:1.7; }
+    .pass-note strong { color:var(--rose); }
+
+    /* RUSH STORE */
+    .rush-store {
+      padding:6rem 5rem;background:var(--indigo);position:relative;overflow:hidden;
+    }
+    .rush-store::before {
+      content:'STORE';position:absolute;right:-2rem;top:50%;transform:translateY(-50%);
+      font-family:'Orbitron',monospace;font-size:12rem;font-weight:900;
+      color:rgba(254,254,250,0.02);pointer-events:none;
+    }
+    .store-header { display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;gap:2rem; }
+    .store-sub { font-size:0.88rem;color:rgba(254,254,250,0.5);margin-top:0.6rem; }
+    .store-reset-badge {
+      font-family:'Orbitron',monospace;font-size:0.62rem;letter-spacing:0.12em;
+      text-transform:uppercase;color:var(--denim);flex-shrink:0;text-align:right;
+    }
+    #store-timer { color:var(--rose); }
+    .store-grid {
+      display:grid;grid-template-columns:repeat(6,1fr);gap:1px;
+    }
+    .store-card {
+      background:rgba(16,12,8,0.55);border:1px solid rgba(98,144,195,0.1);
+      padding:1.8rem 1.2rem;display:flex;flex-direction:column;align-items:center;
+      gap:0.5rem;text-align:center;transition:all 0.3s;position:relative;overflow:hidden;
+      cursor:pointer;
+    }
+    .store-card::after {
+      content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+      background:var(--rose);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;
+    }
+    .store-card:hover { background:rgba(25,42,81,0.5);border-color:rgba(98,144,195,0.3); }
+    .store-card:hover::after { transform:scaleX(1); }
+    .store-card.featured {
+      background:rgba(235,186,185,0.07);border-color:rgba(235,186,185,0.2);
+      grid-row:span 1;
+    }
+    .store-card.featured:hover { background:rgba(235,186,185,0.12); }
+    .store-card.store-pass { background:rgba(25,42,81,0.35);border-color:rgba(98,144,195,0.25); }
+    .store-badge {
+      position:absolute;top:0.6rem;right:0.6rem;
+      font-family:'Orbitron',monospace;font-size:0.46rem;font-weight:700;letter-spacing:0.1em;
+      padding:0.2rem 0.45rem;
+    }
+    .store-card.featured .store-badge { background:rgba(235,186,185,0.2);color:var(--rose); }
+    .store-card.store-pass .store-badge { background:rgba(98,144,195,0.2);color:var(--denim); }
+    .store-item-visual { font-size:2.4rem;margin:0.3rem 0; }
+    .store-item-name {
+      font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;
+      color:var(--white);line-height:1.3;
+    }
+    .store-item-type {
+      font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+      color:rgba(254,254,250,0.3);
+    }
+    .store-price {
+      font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;
+      color:#f0c040;margin-top:0.3rem;
+    }
+    .store-btn {
+      font-family:'Orbitron',monospace;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;
+      background:transparent;border:1px solid rgba(235,186,185,0.3);color:var(--rose);
+      padding:0.4rem 1rem;cursor:pointer;transition:all 0.2s;margin-top:0.3rem;width:100%;
+    }
+    .store-btn:hover { background:var(--rose);color:var(--black); }
+
+    /* RUSH CLANS */
+    .clan-card {
+      background:rgba(25,42,81,0.35);border:1px solid rgba(98,144,195,0.2);
+      padding:2rem;grid-column:span 1;
+    }
+    .clan-card-header { display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem; }
+    .clan-banner { font-size:2rem; }
+    .clan-name { font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:var(--white); }
+    .clan-tag { font-size:0.62rem;letter-spacing:0.12em;color:var(--denim);text-transform:uppercase; }
+    .clan-stats { display:flex;gap:1.5rem;margin-bottom:1rem; }
+    .clan-stat { display:flex;flex-direction:column;gap:0.1rem; }
+    .clan-stat-val { font-family:'Orbitron',monospace;font-size:0.9rem;font-weight:700;color:var(--white); }
+    .clan-stat-lbl { font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(254,254,250,0.3); }
+    .clan-members-row { display:flex;gap:-6px;margin-bottom:0.8rem; }
+    .clan-member-av { width:28px;height:28px;border-radius:50%;border:2px solid var(--black);margin-right:-6px;display:flex;align-items:center;justify-content:center;font-size:0.9rem; }
+    .clan-req { font-size:0.7rem;color:rgba(254,254,250,0.4);line-height:1.6; }
+    .clan-join-btn {
+      font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;
+      background:var(--denim);color:var(--black);padding:0.5rem 1.2rem;border:none;
+      cursor:pointer;transition:all 0.2s;margin-top:1rem;width:100%;font-weight:700;
+    }
+    .clan-join-btn:hover { background:var(--white); }
+
+    /* ACTIVITY FEED */
+    .activity-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+    .act-item {
+      display:flex;align-items:center;gap:0.85rem;
+      background:rgba(16,22,48,0.5);
+      border:1px solid rgba(98,144,195,0.1);
+      border-left:2px solid rgba(98,144,195,0.35);
+      padding:0.85rem 1rem;
+      transition:border-left-color 0.2s,background 0.2s;
+    }
+    .act-item:hover { background:rgba(25,42,81,0.4);border-left-color:var(--rose); }
+    .act-item.act-new { animation:actFadeIn 0.45s ease both; }
+    @keyframes actFadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .act-av { width:36px;height:36px;border-radius:50%;background:rgba(25,42,81,0.8);border:1.5px solid rgba(98,144,195,0.25);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0; }
+    .act-text { font-size:0.76rem;line-height:1.5;color:rgba(254,254,250,0.62); }
+    .act-text strong { color:var(--white);font-weight:700; }
+    .act-zone { color:var(--rose); }
+    .act-time { font-size:0.58rem;color:rgba(254,254,250,0.25);margin-left:auto;flex-shrink:0;white-space:nowrap; }
+
+    /* SEASON 1 SPOTLIGHT */
+    .spotlight-grid {
+      display:grid;grid-template-columns:2fr 1fr 1fr;
+      gap:2px;background:rgba(98,144,195,0.06);
+      border:1px solid rgba(98,144,195,0.1);
+    }
+    .spotlight-card {
+      background:#0c0f1e;overflow:hidden;
+      transition:background 0.3s,transform 0.2s;cursor:pointer;
+    }
+    .spotlight-card:hover { background:rgba(20,30,65,0.9); }
+    .spotlight-big { grid-row:1; }
+    .spotlight-thumb {
+      background:linear-gradient(135deg,rgba(25,42,81,0.6) 0%,rgba(10,18,45,0.8) 100%);
+      display:flex;align-items:center;justify-content:center;
+      position:relative;padding:3.5rem 1rem;
+    }
+    .spotlight-big .spotlight-thumb { padding:6rem 1rem; }
+    .spotlight-thumb::after {
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(to bottom,transparent 60%,rgba(10,14,26,0.85) 100%);
+      pointer-events:none;
+    }
+    .spotlight-info { padding:1.4rem 1.8rem 1.8rem; }
+    .spotlight-tag {
+      font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;
+      color:var(--denim);margin-bottom:0.5rem;font-family:'Orbitron',monospace;
+    }
+    .spotlight-name {
+      font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;
+      color:var(--white);margin-bottom:0.55rem;line-height:1.2;
+    }
+    .spotlight-big .spotlight-name { font-size:1.25rem; }
+    .spotlight-desc { font-size:0.8rem;line-height:1.65;color:rgba(254,254,250,0.5);margin-bottom:0.9rem; }
+    .spotlight-meta { display:flex;gap:1.2rem;font-size:0.7rem;color:rgba(254,254,250,0.38);flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="logo.png" alt="Rush Island" class="nav-logo-img" onerror="this.style.display='none'">
+    RUSH ISLAND
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="zones.html">Zones</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <div class="nav-online"><span class="online-dot"></span><span id="online-count">3,284</span>&nbsp;online</div>
+  <a class="nav-play" href="#trial">Enter Rush Island →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="stars-layer"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Season 1 · Now Live
+    </div>
+    <h1 class="hero-title">
+      RUSH<br>
+      <span class="t-denim">IS</span><span class="t-rose">LAND</span>
+    </h1>
+    <p class="hero-tagline">
+      <strong>Only the boldest and most enthusiastic players</strong><br>
+      can reach the final island. 200+ levels of obstacle races,<br>
+      hidden traps, and checkpoints that separate the real from the mid.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-play" href="#trial">🎮 Enter Rush Island</a>
+      <a class="btn-watch" href="#trial">Test Your Skills →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat">
+        <span class="hstat-num">200+</span>
+        <span class="hstat-label">Levels</span>
+      </div>
+      <div class="hstat">
+        <span class="hstat-num">12</span>
+        <span class="hstat-label">Zone Types</span>
+      </div>
+      <div class="hstat">
+        <span class="hstat-num">14</span>
+        <span class="hstat-label">Secret Levels</span>
+      </div>
+      <div class="hstat">
+        <span class="hstat-num">5%</span>
+        <span class="hstat-label">Final Island Reach Rate</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<!-- SQUAD STRIP -->
+<div class="squad-strip">
+  <div class="squad-section-title">Your Squad <span id="squad-count">(12 online)</span> ›</div>
+  <div class="squad-row">
+    <div class="squad-av squad-add-btn">
+      <div class="squad-av-ring">+</div>
+      <div class="squad-av-name">Add Player</div>
+      <div class="squad-av-zone"></div>
+    </div>
+    <div class="squad-av"><div class="squad-av-ring">😤<div class="squad-online-dot"></div></div><div class="squad-av-name">mikanfog</div><div class="squad-av-zone">Zone 8</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🎮<div class="squad-online-dot"></div></div><div class="squad-av-name">parasocial</div><div class="squad-av-zone">Final Island</div></div>
+    <div class="squad-av"><div class="squad-av-ring">💀<div class="squad-online-dot"></div></div><div class="squad-av-name">den1_23456</div><div class="squad-av-zone">Zone 12</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🌪️<div class="squad-online-dot"></div></div><div class="squad-av-name">poshanchik</div><div class="squad-av-zone">Zone 11</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🔥<div class="squad-online-dot"></div></div><div class="squad-av-name">Dnexus</div><div class="squad-av-zone">Zone 6</div></div>
+    <div class="squad-av"><div class="squad-av-ring">⚡<div class="squad-online-dot"></div></div><div class="squad-av-name">Gorilla</div><div class="squad-av-zone">Zone 9</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🏆<div class="squad-online-dot"></div></div><div class="squad-av-name">chepenkaXX</div><div class="squad-av-zone">Zone 7</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🌊<div class="squad-online-dot"></div></div><div class="squad-av-name">Bagre</div><div class="squad-av-zone">Zone 4</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🎯<div class="squad-online-dot"></div></div><div class="squad-av-name">noy</div><div class="squad-av-zone">Zone 10</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🦅<div class="squad-online-dot"></div></div><div class="squad-av-name">kenzie</div><div class="squad-av-zone">Zone 3</div></div>
+    <div class="squad-av"><div class="squad-av-ring">💎<div class="squad-online-dot"></div></div><div class="squad-av-name">Patricia</div><div class="squad-av-zone">Zone 5</div></div>
+    <div class="squad-av"><div class="squad-av-ring">🚀<div class="squad-online-dot"></div></div><div class="squad-av-name">KOLYAN003</div><div class="squad-av-zone">Zone 2</div></div>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>Rush Island</span><span>200+ Levels</span><span>Obstacle Races</span>
+    <span>Hidden Traps</span><span>Free to Play</span><span>Hall of Legends</span>
+    <span>Season Rewards</span><span>Live Events</span><span>Season 1 Active</span>
+    <span>Rush Island</span><span>200+ Levels</span><span>Obstacle Races</span>
+    <span>Hidden Traps</span><span>Free to Play</span><span>Hall of Legends</span>
+    <span>Season Rewards</span><span>Live Events</span><span>Season 1 Active</span>
+  </div>
+</div>
+
+<!-- RUSH TRIALS CATALOG -->
+<section class="rush-trials">
+  <div class="trials-header">
+    <div>
+      <div class="trials-title">Rush Trials <span class="trials-arrow">›</span></div>
+      <div class="trials-sub">Pick a training stage. Master each skill before you race the real thing.</div>
+    </div>
+    <a class="trials-view-all" href="#trial">Take the Full Trial →</a>
+  </div>
+  <div class="trials-grid">
+
+    <div class="trial-game-card">
+      <div class="trial-game-thumb" id="thumb-1">
+        <span class="thumb-icon">⚡</span>
+      </div>
+      <div class="trial-game-name">Reaction Lab</div>
+      <div class="trial-game-meta">
+        <span>👍 94%</span>
+        <span>👥 1.2K</span>
+      </div>
+    </div>
+
+    <div class="trial-game-card">
+      <div class="trial-game-thumb" id="thumb-2">
+        <span class="thumb-icon">🎯</span>
+      </div>
+      <div class="trial-game-name">Timing Master</div>
+      <div class="trial-game-meta">
+        <span>👍 91%</span>
+        <span>👥 874</span>
+      </div>
+    </div>
+
+    <div class="trial-game-card">
+      <div class="trial-game-thumb" id="thumb-3">
+        <span class="thumb-icon">🧠</span>
+      </div>
+      <div class="trial-game-name">Pattern Rush</div>
+      <div class="trial-game-meta">
+        <span>👍 88%</span>
+        <span>👥 642</span>
+      </div>
+    </div>
+
+    <div class="trial-game-card">
+      <div class="trial-game-thumb" id="thumb-4">
+        <span class="thumb-icon">🏃</span>
+      </div>
+      <div class="trial-game-name">Speed Course</div>
+      <div class="trial-game-meta">
+        <span>👍 96%</span>
+        <span>👥 2.1K</span>
+      </div>
+    </div>
+
+    <div class="trial-game-card">
+      <div class="trial-game-thumb" id="thumb-5">
+        <span class="thumb-icon">💀</span>
+      </div>
+      <div class="trial-game-name">Obstacle Academy</div>
+      <div class="trial-game-meta">
+        <span>👍 89%</span>
+        <span>👥 3.4K</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- RECOMMENDED FOR YOU -->
+<section class="feed-section dark first-catalog">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Recommended For You <span class="feed-title-arrow">›</span></div>
+      <div class="feed-sub">Based on your Island Trial score · Updated daily</div>
+    </div>
+    <a class="feed-see-all" href="zones.html">See all zones →</a>
+  </div>
+  <div class="feed-grid-5 two-rows">
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-live">LIVE</span><span class="game-thumb-icon">🌋</span></div><div class="game-name">Lava Ridge</div><div class="game-meta"><span>👍 97%</span><span>👥 2.4K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-hot">HOT</span><span class="game-thumb-icon">🪞</span></div><div class="game-name">Mirror Maze</div><div class="game-meta"><span>👍 89%</span><span>👥 1.1K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">🌪️</span></div><div class="game-name">The Ascent</div><div class="game-meta"><span>👍 94%</span><span>👥 870</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-new">NEW</span><span class="game-thumb-icon">⚡</span></div><div class="game-name">Storm Passage</div><div class="game-meta"><span>👍 91%</span><span>👥 650</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">🌀</span></div><div class="game-name">Void Corridor</div><div class="game-meta"><span>👍 88%</span><span>👥 430</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-event">EVENT</span><span class="game-thumb-icon">❄️</span></div><div class="game-name">Ice Fields</div><div class="game-meta"><span>👍 93%</span><span>👥 780</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">🌑</span></div><div class="game-name">Shadow Run</div><div class="game-meta"><span>👍 86%</span><span>👥 540</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-hot">HOT</span><span class="game-thumb-icon">💥</span></div><div class="game-name">Pulse Arena</div><div class="game-meta"><span>👍 95%</span><span>👥 1.8K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-season">S1</span><span class="game-thumb-icon">👥</span></div><div class="game-name">Squad Rush</div><div class="game-meta"><span>👍 98%</span><span>👥 3.1K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-live">LIVE</span><span class="game-thumb-icon">💀</span></div><div class="game-name">Final Island</div><div class="game-meta"><span>👍 99%</span><span>👥 4.7K</span></div></div>
+  </div>
+</section>
+
+<!-- TRENDING NOW -->
+<section class="feed-section mid">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Trending Now <span class="feed-title-arrow">›</span></div>
+      <div class="feed-sub">Most played in the last 24 hours</div>
+    </div>
+    <a class="feed-see-all" href="leaderboard.html">Full leaderboard →</a>
+  </div>
+  <div class="feed-grid-5">
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-hot">🔥 #1</span><span class="game-thumb-icon">🏃</span></div><div class="game-name">Speed Course Alpha</div><div class="game-meta"><span>👍 96%</span><span>👥 5.2K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-live">LIVE</span><span class="game-thumb-icon">🎯</span></div><div class="game-name">Precision Run</div><div class="game-meta"><span>👍 92%</span><span>👥 2.9K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">🧗</span></div><div class="game-name">Wall Climber X</div><div class="game-meta"><span>👍 87%</span><span>👥 1.6K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-event">EVENT</span><span class="game-thumb-icon">🌩️</span></div><div class="game-name">Midnight Race</div><div class="game-meta"><span>👍 98%</span><span>👥 6.8K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-new">NEW</span><span class="game-thumb-icon">🔮</span></div><div class="game-name">Neon Shift</div><div class="game-meta"><span>👍 90%</span><span>👥 940</span></div></div>
+  </div>
+</section>
+
+<!-- TRIAL OVERLAY -->
+<div id="trial-overlay">
+  <button class="trial-close" id="closeTrial">✕ Close</button>
+  <div class="trial-steps">
+    <div class="trial-step-dot active" id="sdot0"></div>
+    <div class="trial-step-dot" id="sdot1"></div>
+    <div class="trial-step-dot" id="sdot2"></div>
+  </div>
+
+  <!-- Stage 1: Reaction -->
+  <div class="trial-stage show" id="stage-reaction">
+    <div class="trial-stage-label">Stage 1 of 3</div>
+    <h3 class="trial-stage-title">Reaction Test</h3>
+    <p class="trial-stage-desc">Wait for the circle to turn <strong style="color:#4ade80">green</strong>, then click it as fast as you can. Don't click early — that resets the timer.</p>
+    <div id="reaction-arena">
+      <div id="reaction-dot" class="gray"></div>
+      <span class="reaction-label" id="reaction-label">Click to begin</span>
+    </div>
+  </div>
+
+  <!-- Stage 2: Timing -->
+  <div class="trial-stage" id="stage-timing">
+    <div class="trial-stage-label">Stage 2 of 3</div>
+    <h3 class="trial-stage-title">Timing Challenge</h3>
+    <p class="trial-stage-desc">A bar sweeps across the track. Click anywhere on the track to stop it inside the <strong style="color:#4ade80">green zone</strong>.</p>
+    <div id="timing-track">
+      <div id="timing-zone"></div>
+      <div id="timing-bar"></div>
+    </div>
+    <p class="timing-hint">Click the track to lock in your timing</p>
+  </div>
+
+  <!-- Stage 3: Pattern -->
+  <div class="trial-stage" id="stage-pattern">
+    <div class="trial-stage-label">Stage 3 of 3</div>
+    <h3 class="trial-stage-title">Pattern Memory</h3>
+    <p class="trial-stage-desc">Watch the sequence, then repeat it. The tiles will flash — memorize the order and tap them back.</p>
+    <div id="pattern-grid">
+      <div class="ptile" data-i="0"></div>
+      <div class="ptile" data-i="1"></div>
+      <div class="ptile" data-i="2"></div>
+      <div class="ptile" data-i="3"></div>
+    </div>
+    <p class="pattern-hint" id="pattern-hint">Watch the sequence…</p>
+  </div>
+
+  <!-- Results -->
+  <div id="trial-results">
+    <div class="result-dna-wrap">
+      <div class="result-score-ring"></div>
+      <canvas id="dna-canvas" width="200" height="200"></canvas>
+    </div>
+    <div class="result-score" id="result-score">—</div>
+    <div class="result-score-label">Rush Score</div>
+    <div class="result-type" id="result-type">—</div>
+    <div class="result-zone" id="result-zone">—</div>
+    <p class="result-desc" id="result-desc">—</p>
+    <div class="result-breakdown">
+      <div class="rb-item"><span class="rb-val" id="rb-react">—</span><span class="rb-key">Reaction</span></div>
+      <div class="rb-item"><span class="rb-val" id="rb-timing">—</span><span class="rb-key">Timing</span></div>
+      <div class="rb-item"><span class="rb-val" id="rb-pattern">—</span><span class="rb-key">Memory</span></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-retry" id="retryTrial">Try Again</button>
+      <a class="btn-explore" href="zones.html">Explore Zones →</a>
+    </div>
+  </div>
+</div>
+
+<!-- POPULAR THIS WEEK -->
+<div style="height:1px;background:linear-gradient(to right,transparent,rgba(98,144,195,0.2),transparent);margin:0 5rem;"></div>
+<section class="feed-section dark">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Popular This Week <span class="feed-title-arrow">›</span></div>
+      <div class="feed-sub">Most cleared zones · Season 1 rankings</div>
+    </div>
+    <a class="feed-see-all" href="leaderboard.html">Full leaderboard →</a>
+  </div>
+  <div class="feed-grid-5">
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-hot">🔥 #1</span><span class="game-thumb-icon">🌋</span></div><div class="game-name">Lava Ridge Speedrun</div><div class="game-meta"><span>👍 98%</span><span>👥 8.4K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-live">LIVE</span><span class="game-thumb-icon">🌩️</span></div><div class="game-name">Midnight Race</div><div class="game-meta"><span>👍 97%</span><span>👥 6.2K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-event">EVENT</span><span class="game-thumb-icon">👥</span></div><div class="game-name">Squad Challenge</div><div class="game-meta"><span>👍 99%</span><span>👥 5.7K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">💀</span></div><div class="game-name">Final Island Attempt</div><div class="game-meta"><span>👍 96%</span><span>👥 4.9K</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-season">S1</span><span class="game-thumb-icon">⚡</span></div><div class="game-name">Zone 9 Rush</div><div class="game-meta"><span>👍 93%</span><span>👥 3.1K</span></div></div>
+  </div>
+</section>
+
+<!-- LIVE ACTIVITY FEED -->
+<section class="feed-section mid" id="activity-section">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Live Activity <span class="feed-title-arrow" style="color:#4ade80">●</span></div>
+      <div class="feed-sub">What's happening on Rush Island right now</div>
+    </div>
+    <span style="font-size:0.72rem;color:rgba(254,254,250,0.3);">Updates every few seconds</span>
+  </div>
+  <div class="activity-grid" id="activityFeed">
+    <!-- populated by JS -->
+  </div>
+</section>
+
+<!-- SEASON 1 SPOTLIGHT -->
+<section class="feed-section dark">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Season 1 Spotlight <span class="feed-title-arrow">›</span></div>
+      <div class="feed-sub">Featured events · Limited time</div>
+    </div>
+    <span style="font-size:0.72rem;color:var(--rose);">Ends in <strong id="season-timer">27d 14h</strong></span>
+  </div>
+  <div class="spotlight-grid">
+    <div class="spotlight-card spotlight-big">
+      <div class="spotlight-thumb"><span class="game-badge badge-live">LIVE NOW</span><span style="font-size:4rem;opacity:0.2">🌩️</span></div>
+      <div class="spotlight-info">
+        <div class="spotlight-tag">Season Event</div>
+        <div class="spotlight-name">Midnight Race Championship</div>
+        <div class="spotlight-desc">All zones unlocked simultaneously. 30-minute window. Top 3 earn exclusive S1 skins. Only 2 spots remain.</div>
+        <div class="spotlight-meta"><span>👍 99%</span><span>👥 6,847 watching</span><span style="color:#4ade80">🟢 Live</span></div>
+      </div>
+    </div>
+    <div class="spotlight-card">
+      <div class="spotlight-thumb"><span class="game-badge badge-event">WEEKLY</span><span style="font-size:3rem;opacity:0.2">👥</span></div>
+      <div class="spotlight-info">
+        <div class="spotlight-tag">Squad Event</div>
+        <div class="spotlight-name">Squad Challenge</div>
+        <div class="spotlight-desc">Bring 3 friends. Reach Final Island together. Only 2 squads have ever done it.</div>
+        <div class="spotlight-meta"><span>👍 98%</span><span>👥 3.1K</span></div>
+      </div>
+    </div>
+    <div class="spotlight-card">
+      <div class="spotlight-thumb"><span class="game-badge badge-hot">HOT</span><span style="font-size:3rem;opacity:0.2">⏱️</span></div>
+      <div class="spotlight-info">
+        <div class="spotlight-tag">Speed Run</div>
+        <div class="spotlight-name">Speed Run Sunday</div>
+        <div class="spotlight-desc">Best time through Zones 1–6 wins exclusive avatar skin. Top 100 get bonus Rush Coins.</div>
+        <div class="spotlight-meta"><span>👍 95%</span><span>👥 2.4K</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RUSH PASS COMPACT -->
+<section class="feed-section mid">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Rush Pass · Season 1 <span class="feed-title-arrow">›</span></div>
+      <div class="feed-sub">28 days remaining · 14 premium rewards</div>
+    </div>
+    <button onclick="this.textContent='Coming Soon!';setTimeout(()=>this.textContent='Get Pass — 🪙 800',1600)" style="font-family:'Orbitron',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:0.55rem 1.3rem;border:none;cursor:pointer;font-weight:700;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);">Get Pass — 🪙 800</button>
+  </div>
+  <div class="pass-tracks">
+    <div class="pass-row pass-premium">
+      <div class="pass-tier-label">PREMIUM</div>
+      <div class="pass-tiles">
+        <div class="pass-tile unlocked">👑<span class="tile-label">Crown</span></div>
+        <div class="pass-tile unlocked">🎨<span class="tile-label">Void Skin</span></div>
+        <div class="pass-tile unlocked">💎<span class="tile-label">500 Coins</span></div>
+        <div class="pass-tile locked">🏹<span class="tile-label">Arrow FX</span></div>
+        <div class="pass-tile locked">🌟<span class="tile-label">Star Trail</span></div>
+        <div class="pass-tile locked">🔥<span class="tile-label">Blaze Cape</span></div>
+        <div class="pass-tile locked">🌀<span class="tile-label">Storm Suit</span></div>
+        <div class="pass-tile special locked">ISLAND<br>LEGEND</div>
+      </div>
+    </div>
+    <div class="pass-progress-wrap"><div class="pass-progress-bar" style="--prog:28%"></div><div class="pass-levels"><span>LVL 1</span><span>LVL 25</span><span>LVL 50</span><span>LVL 75</span><span>LVL 100</span></div></div>
+    <div class="pass-row pass-free">
+      <div class="pass-tier-label">FREE</div>
+      <div class="pass-tiles">
+        <div class="pass-tile unlocked">🪙<span class="tile-label">100 Coins</span></div>
+        <div class="pass-tile unlocked">⚡<span class="tile-label">Speed Tag</span></div>
+        <div class="pass-tile unlocked">🪙<span class="tile-label">200 Coins</span></div>
+        <div class="pass-tile locked">🎭<span class="tile-label">Mask</span></div>
+        <div class="pass-tile locked">🪙<span class="tile-label">300 Coins</span></div>
+        <div class="pass-tile locked">🏅<span class="tile-label">Badge</span></div>
+        <div class="pass-tile locked">🪙<span class="tile-label">400 Coins</span></div>
+        <div class="pass-tile locked">🎯<span class="tile-label">Title</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RUSH STORE COMPACT -->
+<section class="feed-section dark">
+  <div class="feed-header">
+    <div class="feed-left">
+      <div class="feed-title">Rush Store <span class="feed-title-arrow">›</span></div>
+      <div class="feed-sub">Resets in <span id="store-timer2" style="color:var(--rose);font-family:'Orbitron',monospace;font-size:0.72rem;">11:42:07</span> · Earn coins by completing zones</div>
+    </div>
+  </div>
+  <div class="feed-grid-5" style="grid-template-columns:repeat(6,1fr);">
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-hot">HOT</span><span class="game-thumb-icon">🏄</span></div><div class="game-name">Void Surfer</div><div class="game-meta"><span style="color:#f0c040">🪙 1,200</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">⚡</span></div><div class="game-name">Speed Trail FX</div><div class="game-meta"><span style="color:#f0c040">🪙 400</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">🌪️</span></div><div class="game-name">Storm Bundle</div><div class="game-meta"><span style="color:#f0c040">🪙 900</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">💀</span></div><div class="game-name">Final Island Cape</div><div class="game-meta"><span style="color:#f0c040">🪙 2,000</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-thumb-icon">🎭</span></div><div class="game-name">Phantom Mask</div><div class="game-meta"><span style="color:#f0c040">🪙 650</span></div></div>
+    <div class="game-card"><div class="game-thumb"><span class="game-badge badge-season">PASS</span><span class="game-thumb-icon">👑</span></div><div class="game-name">Rush Pass S1</div><div class="game-meta"><span style="color:#f0c040">🪙 800</span></div></div>
+  </div>
+</section>
+
+<!-- ISLAND TRIAL TEASER -->
+<section id="trial" style="padding:5rem 5rem;background:linear-gradient(135deg,rgba(25,42,81,0.5) 0%,rgba(10,14,30,0.7) 100%);border-top:1px solid rgba(98,144,195,0.15);border-bottom:1px solid rgba(98,144,195,0.1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:3rem;position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(98,144,195,0.06) 0%,transparent 65%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;">
+    <div style="font-size:0.6rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--rose);margin-bottom:0.9rem;font-family:'Orbitron',monospace;">Island Trial · Exclusive</div>
+    <h2 style="font-family:'Orbitron',monospace;font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:900;line-height:1.05;margin-bottom:0.8rem;">Don't know your zone?<br><span style="color:var(--rose);">Let us tell you.</span></h2>
+    <p style="font-size:0.9rem;color:rgba(254,254,250,0.52);max-width:500px;line-height:1.75;">30 seconds. 3 challenges. Reaction → Timing → Memory. Get your Rush Score, player type, recommended zone, and a unique Rush DNA fingerprint.</p>
+    <div style="display:flex;gap:0.8rem;margin-top:1.4rem;flex-wrap:wrap;">
+      <span style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(98,144,195,0.3);color:var(--denim);padding:0.3rem 0.85rem;font-family:'Orbitron',monospace;">Reaction Test</span>
+      <span style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(98,144,195,0.3);color:var(--denim);padding:0.3rem 0.85rem;font-family:'Orbitron',monospace;">Timing Challenge</span>
+      <span style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(98,144,195,0.3);color:var(--denim);padding:0.3rem 0.85rem;font-family:'Orbitron',monospace;">Pattern Memory</span>
+    </div>
+  </div>
+  <button id="openTrial2" style="font-family:'Orbitron',monospace;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:1.3rem 3rem;border:none;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);cursor:pointer;font-weight:700;flex-shrink:0;position:relative;z-index:1;transition:background 0.2s,transform 0.2s;">Start Trial →</button>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">RUSH ISLAND</div>
+    <div style="margin-top:0.4rem;">Rush Island · © 2026</div>
+  </div>
+  <div class="footer-links">
+    <a href="zones.html">Zones</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="about.html">About</a>
+    <a href="#trial">Enter Rush Island</a>
+  </div>
+</footer>
+
+<script>
+  // openTrial2 button wires to the same trial overlay
+  (function(){
+    const btn2 = document.getElementById('openTrial2');
+    if(btn2) btn2.addEventListener('click', openTrial);
+  })();
+
+  // store countdown — shared between store-timer and store-timer2
+  (function(){
+    const els = [document.getElementById('store-timer'), document.getElementById('store-timer2')].filter(Boolean);
+    if(!els.length) return;
+    let secs = 11*3600 + 42*60 + 7;
+    setInterval(()=>{
+      if(secs<=0) secs=24*3600;
+      secs--;
+      const h=String(Math.floor(secs/3600)).padStart(2,'0');
+      const m=String(Math.floor((secs%3600)/60)).padStart(2,'0');
+      const s=String(secs%60).padStart(2,'0');
+      els.forEach(el=>el.textContent=`${h}:${m}:${s}`);
+    },1000);
+  })();
+
+  // live activity feed
+  (function(){
+    const feed = document.getElementById('activityFeed');
+    if(!feed) return;
+    const avatars = ['😤','🎮','💀','🌪️','🔥','⚡','🏆','🌊','🎯','🦅','💎','🚀','🤖','👁️','🌀'];
+    const names = ['mikanfog','parasocial','den1_23456','poshanchik','Dnexus','Gorilla','chepenkaXX','Bagre','noy','kenzie','Patricia','KOLYAN003','Void_X','st0rm','RushKing'];
+    const zones = ['Zone 1','Zone 2','Zone 3','Zone 4','Zone 5','Zone 6','Zone 7','Zone 8','Zone 9','Zone 10','Zone 11','Zone 12','Final Island'];
+    const actions = [
+      (n,z)=>`<strong>${n}</strong> just beat <span class="act-zone">${z}</span>`,
+      (n,z)=>`<strong>${n}</strong> died on <span class="act-zone">${z}</span> — 3rd attempt`,
+      (n,z)=>`<strong>${n}</strong> unlocked <span class="act-zone">${z}</span> for the first time`,
+      (n,z)=>`<strong>${n}</strong> set a new record in <span class="act-zone">${z}</span>`,
+      (n,z)=>`<strong>${n}</strong> is now spectating <span class="act-zone">${z}</span>`,
+      (n,z)=>`<strong>${n}</strong> joined <span class="act-zone">${z}</span>`,
+      (n,z)=>`<strong>${n}</strong> rage-quit <span class="act-zone">${z}</span>`,
+      (n,z)=>`<strong>${n}</strong> earned 🪙 300 in <span class="act-zone">${z}</span>`,
+    ];
+    function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function timeSince(){ const s=Math.floor(Math.random()*59)+1; return s<5?'just now':`${s}s ago`; }
+    function makeItem(){
+      const name=rand(names), zone=rand(zones), av=rand(avatars), txt=rand(actions)(name,zone);
+      const el=document.createElement('div');
+      el.className='act-item act-new';
+      el.innerHTML=`<div class="act-av">${av}</div><div class="act-text">${txt}</div><div class="act-time">${timeSince()}</div>`;
+      return el;
+    }
+    // seed 9 items (3×3 grid)
+    for(let i=0;i<9;i++) feed.appendChild(makeItem());
+    // rotate: remove oldest, add new one every 2.5s
+    setInterval(()=>{
+      const items=feed.querySelectorAll('.act-item');
+      if(items.length>0) feed.removeChild(items[0]);
+      feed.appendChild(makeItem());
+    },2500);
+  })();
+
+  // animated online player count
+  (function(){
+    const el=document.getElementById('online-count');
+    if(!el) return;
+    let base=3284;
+    setInterval(()=>{
+      base += Math.floor((Math.random()-0.45)*12);
+      base = Math.max(2800,Math.min(4200,base));
+      el.textContent=base.toLocaleString();
+    },4000);
+  })();
+
+  // store card click ripple (toast)
+  document.querySelectorAll('.store-btn').forEach(btn=>{
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const orig=this.textContent;
+      this.textContent='Coming Soon!';
+      this.style.background='var(--denim)';this.style.color='var(--black)';
+      setTimeout(()=>{this.textContent=orig;this.style.background='';this.style.color='';},1600);
+    });
+  });
+
+  // pass upgrade btn
+  document.querySelectorAll('.btn-trial').forEach(b=>{
+    if(b.textContent.includes('Rush Pass')) b.addEventListener('click',function(){
+      this.textContent='Coming Soon!';setTimeout(()=>this.textContent='Get Rush Pass →',1800);
+    });
+  });
+
+  // cursor — start off-screen so ring doesn't flash in corner
+  const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+  let mx=-200,my=-200,rx=-200,ry=-200;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  (function anim(){cur.style.transform=`translate(${mx-7}px,${my-7}px)`;rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform=`translate(${rx-20}px,${ry-20}px)`;requestAnimationFrame(anim);})();
+  // reveal
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+  // safety fallback — force-show anything still in viewport after 600ms
+  setTimeout(()=>{document.querySelectorAll('.reveal').forEach(r=>{const rect=r.getBoundingClientRect();if(rect.top<window.innerHeight)r.classList.add('visible');});},600);
+
+  // ═══════════════════════════════════════════════════
+  // ISLAND TRIAL — skill assessment with Web Audio + Canvas DNA
+  // ═══════════════════════════════════════════════════
+  (function(){
+    // ── Audio context (lazy init on first user gesture) ──
+    let actx = null;
+    function getAudio(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+    function beep(freq, dur, vol, type){
+      try{
+        const a=getAudio(), o=a.createOscillator(), g=a.createGain();
+        o.connect(g); g.connect(a.destination);
+        o.type=type||'sine'; o.frequency.value=freq;
+        g.gain.setValueAtTime(vol||0.18, a.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+dur);
+        o.start(a.currentTime); o.stop(a.currentTime+dur);
+      }catch(e){}
+    }
+    function chime(){ beep(880,0.12,0.2); setTimeout(()=>beep(1320,0.18,0.15),100); }
+    function fail(){ beep(220,0.3,0.2,'sawtooth'); }
+    function tick(){ beep(660,0.06,0.12); }
+
+    // ── State ──
+    let scores = { react:0, timing:0, pattern:0 };
+
+    // ── Overlay open/close ──
+    const overlay = document.getElementById('trial-overlay');
+    const openTrialBtn = document.getElementById('openTrial');
+    if(openTrialBtn) openTrialBtn.addEventListener('click', openTrial);
+    document.getElementById('closeTrial').addEventListener('click', ()=>{ overlay.classList.remove('active'); resetAll(); });
+    document.getElementById('retryTrial').addEventListener('click', ()=>{ resetAll(); startReaction(); });
+
+    function openTrial(){
+      overlay.classList.add('active');
+      document.body.style.overflow='hidden';
+      resetAll();
+      startReaction();
+    }
+    function closeTrial(){
+      overlay.classList.remove('active');
+      document.body.style.overflow='';
+    }
+
+    // ── Step dots ──
+    function setDots(active){
+      [0,1,2].forEach(i=>{
+        const d=document.getElementById('sdot'+i);
+        d.classList.remove('active','done');
+        if(i<active) d.classList.add('done');
+        else if(i===active) d.classList.add('active');
+      });
+    }
+
+    // ── Show/hide stages ──
+    function showStage(id){
+      document.querySelectorAll('.trial-stage').forEach(s=>s.classList.remove('show'));
+      document.getElementById('trial-results').classList.remove('show');
+      if(id) document.getElementById(id).classList.add('show');
+    }
+
+    function resetAll(){
+      scores = {react:0, timing:0, pattern:0};
+      clearTimeout(reactionTimer); clearTimeout(reactionGreenTimer);
+      cancelAnimationFrame(timingRaf); clearTimeout(patternTimer);
+      reactionPhase='idle';
+      showStage('stage-reaction');
+      setDots(0);
+      // reset reaction
+      const arena=document.getElementById('reaction-arena');
+      arena.className=''; arena.classList.add('waiting');
+      document.getElementById('reaction-dot').className='gray';
+      document.getElementById('reaction-label').textContent='Click to begin';
+      reactionStarted=false;
+      // reset timing bar
+      timingPos=0; timingStopped=false;
+      document.getElementById('timing-bar').style.left='0%';
+      // reset pattern
+      patternSeq=[]; patternInput=[]; patternInputActive=false;
+      document.getElementById('pattern-hint').textContent='Watch the sequence…';
+      document.querySelectorAll('.ptile').forEach(t=>{ t.classList.remove('lit','wrong'); t.style.pointerEvents='none'; });
+    }
+
+    // ═══ STAGE 1 — REACTION ═══
+    let reactionPhase='idle', reactionStarted=false, reactionTimer, reactionGreenTimer, reactionStart;
+
+    function startReaction(){
+      showStage('stage-reaction');
+      setDots(0);
+      const arena=document.getElementById('reaction-arena');
+      const dot=document.getElementById('reaction-dot');
+      const lbl=document.getElementById('reaction-label');
+      arena.className='waiting';
+      dot.className='gray';
+      lbl.textContent='Click to begin';
+      reactionStarted=false; reactionPhase='idle';
+
+      arena.onclick=null;
+      arena.onclick=function(){
+        if(reactionPhase==='idle'){
+          reactionPhase='waiting';
+          lbl.textContent='Wait for green…';
+          const delay=1400+Math.random()*2200;
+          reactionGreenTimer=setTimeout(()=>{
+            reactionPhase='ready';
+            dot.className='green';
+            arena.className='ready';
+            lbl.textContent='NOW!';
+            reactionStart=performance.now();
+          }, delay);
+        } else if(reactionPhase==='waiting'){
+          // too early
+          clearTimeout(reactionGreenTimer);
+          fail();
+          lbl.textContent='Too early! Click to retry…';
+          dot.className='gray'; arena.className='waiting';
+          reactionPhase='idle';
+        } else if(reactionPhase==='ready'){
+          const ms=Math.round(performance.now()-reactionStart);
+          reactionPhase='done';
+          arena.className='clicked';
+          lbl.textContent=ms+'ms';
+          dot.className='gray';
+          // score: 0–400 pts; sub-150=400, 150-300 linear 400→200, 300-600 linear 200→50, >600=20
+          let rs=ms<150?400: ms<300?Math.round(400-(ms-150)*(200/150)): ms<600?Math.round(200-(ms-300)*(150/300)):20;
+          scores.react=rs;
+          chime();
+          document.getElementById('rb-react').textContent=ms+'ms';
+          reactionTimer=setTimeout(goTiming, 900);
+        }
+      };
+    }
+
+    // ═══ STAGE 2 — TIMING ═══
+    let timingPos=0, timingDir=1, timingRaf, timingStopped=false;
+
+    function goTiming(){
+      showStage('stage-timing');
+      setDots(1);
+      timingPos=0; timingDir=1; timingStopped=false;
+      const track=document.getElementById('timing-track');
+      const bar=document.getElementById('timing-bar');
+      const zone=document.getElementById('timing-zone');
+      // zone: 35%–60% of track width
+      const zStart=35, zEnd=60;
+      zone.style.left=zStart+'%';
+      zone.style.width=(zEnd-zStart)+'%';
+      bar.style.left='0%';
+
+      const speed=0.45; // percent per ~16ms frame → ~28px/s on 440px
+      let last=performance.now();
+
+      function frame(now){
+        if(timingStopped) return;
+        const dt=now-last; last=now;
+        timingPos+=timingDir*speed*(dt/16);
+        if(timingPos>=100){ timingPos=100; timingDir=-1; }
+        if(timingPos<=0){ timingPos=0; timingDir=1; }
+        bar.style.left=timingPos+'%';
+        timingRaf=requestAnimationFrame(frame);
+      }
+      timingRaf=requestAnimationFrame(frame);
+
+      track.onclick=function(){
+        if(timingStopped) return;
+        timingStopped=true;
+        cancelAnimationFrame(timingRaf);
+        const center=(zStart+zEnd)/2;
+        const dist=Math.abs(timingPos-center);
+        // score: 0–400; perfect (dist<2)=400, linear falloff to 0 at dist=25
+        let ts=dist<2?400:Math.max(0,Math.round(400*(1-(dist-2)/23)));
+        scores.timing=ts;
+        if(ts>250) chime(); else fail();
+        document.getElementById('rb-timing').textContent=Math.round(100-dist*4)+'%';
+        setTimeout(goPattern, 700);
+      };
+    }
+
+    // ═══ STAGE 3 — PATTERN ═══
+    let patternSeq=[], patternInput=[], patternInputActive=false, patternTimer;
+
+    function goPattern(){
+      showStage('stage-pattern');
+      setDots(2);
+      patternSeq=[];
+      patternInput=[];
+      patternInputActive=false;
+      // generate 4-step sequence
+      for(let i=0;i<4;i++) patternSeq.push(Math.floor(Math.random()*4));
+      const tiles=document.querySelectorAll('.ptile');
+      tiles.forEach(t=>{ t.classList.remove('lit','wrong'); t.style.pointerEvents='none'; });
+      document.getElementById('pattern-hint').textContent='Watch the sequence…';
+
+      // play sequence
+      let i=0;
+      function playNext(){
+        if(i>=patternSeq.length){ setTimeout(enableInput, 400); return; }
+        const ti=patternSeq[i];
+        tiles[ti].classList.add('lit');
+        tick();
+        setTimeout(()=>{ tiles[ti].classList.remove('lit'); i++; setTimeout(playNext,200); },450);
+      }
+      setTimeout(playNext, 600);
+
+      function enableInput(){
+        patternInputActive=true;
+        document.getElementById('pattern-hint').textContent='Your turn — repeat the sequence';
+        tiles.forEach(t=>{ t.style.pointerEvents='auto'; });
+        tiles.forEach(t=>{
+          t.onclick=function(){
+            if(!patternInputActive) return;
+            const idx=parseInt(t.dataset.i);
+            const expected=patternSeq[patternInput.length];
+            t.classList.add('lit');
+            setTimeout(()=>t.classList.remove('lit'),200);
+            if(idx===expected){
+              tick();
+              patternInput.push(idx);
+              if(patternInput.length===patternSeq.length){
+                patternInputActive=false;
+                scores.pattern=200; // full sequence correct
+                document.getElementById('rb-pattern').textContent='4/4';
+                chime();
+                tiles.forEach(t=>t.style.pointerEvents='none');
+                setTimeout(showResults,700);
+              }
+            } else {
+              patternInputActive=false;
+              fail();
+              // partial credit
+              scores.pattern=Math.round((patternInput.length/patternSeq.length)*200);
+              t.classList.add('wrong');
+              document.getElementById('rb-pattern').textContent=patternInput.length+'/4';
+              document.getElementById('pattern-hint').textContent='Wrong tile — see your results';
+              tiles.forEach(tt=>tt.style.pointerEvents='none');
+              setTimeout(showResults,900);
+            }
+          };
+        });
+      }
+    }
+
+    // ═══ RESULTS ═══
+    function showResults(){
+      const total=scores.react+scores.timing+scores.pattern; // max 1000
+      const finalScore=Math.min(1000,total);
+
+      document.getElementById('result-score').textContent=finalScore;
+
+      let type,zone,desc;
+      if(finalScore>=800){ type='Island Legend'; zone='Start at Zone 12 — Final Island'; desc='You're in the top tier. Reflexes, timing, and memory all fire at elite level. The Hall of Legends is waiting for your name.'; }
+      else if(finalScore>=600){ type='Void Runner'; zone='Start at Zone 9 — Void Loop'; desc='Extreme zone material. You have the fundamentals locked. The upper zones will still humble you — but you'll get there.'; }
+      else if(finalScore>=400){ type='Storm Rider'; zone='Start at Zone 6 — Storm Circuit'; desc='Solid player. Good instincts, some hesitation on timing. The Hard zones are where you'll grow — and rage — the most.'; }
+      else if(finalScore>=200){ type='Zone Racer'; zone='Start at Zone 3 — Mirror Maze'; desc='Intermediate territory. You've got the core skills but the precision isn't there yet. Zone 3 will show you what's missing.'; }
+      else { type='Island Tourist'; zone='Start at Zone 1 — Lava Ridge'; desc='Everyone starts somewhere. Zone 1 exists for a reason. The game gets good — once you survive the intro.'; }
+
+      document.getElementById('result-type').textContent=type;
+      document.getElementById('result-zone').textContent=zone;
+      document.getElementById('result-desc').textContent=desc;
+
+      // draw DNA canvas
+      drawDNA(finalScore, scores.react, scores.timing, scores.pattern);
+
+      // hide stages, show results
+      document.querySelectorAll('.trial-stage').forEach(s=>s.classList.remove('show'));
+      document.getElementById('trial-results').classList.add('show');
+      chime(); setTimeout(()=>chime(),300);
+    }
+
+    // ═══ CANVAS DNA ═══
+    function drawDNA(total, r, t, p){
+      const canvas=document.getElementById('dna-canvas');
+      const ctx=canvas.getContext('2d');
+      const W=200, H=200, cx=W/2, cy=H/2;
+      ctx.clearRect(0,0,W,H);
+
+      const norm=v=>v/400; // normalize each sub-score 0-1
+
+      // background circle
+      ctx.beginPath(); ctx.arc(cx,cy,95,0,Math.PI*2);
+      ctx.fillStyle='rgba(25,42,81,0.6)'; ctx.fill();
+
+      // radial lines based on react score
+      const lines=6+Math.floor(norm(r)*6);
+      ctx.strokeStyle='rgba(98,144,195,0.25)'; ctx.lineWidth=1;
+      for(let i=0;i<lines;i++){
+        const a=(i/lines)*Math.PI*2;
+        ctx.beginPath(); ctx.moveTo(cx,cy);
+        ctx.lineTo(cx+Math.cos(a)*90, cy+Math.sin(a)*90);
+        ctx.stroke();
+      }
+
+      // outer arc — timing score (rose)
+      const tArc=norm(t)*Math.PI*1.8;
+      ctx.beginPath(); ctx.arc(cx,cy,78,-Math.PI/2,-Math.PI/2+tArc);
+      ctx.strokeStyle='rgba(235,186,185,0.7)'; ctx.lineWidth=3; ctx.stroke();
+
+      // middle arc — react score (denim)
+      const rArc=norm(r)*Math.PI*1.8;
+      ctx.beginPath(); ctx.arc(cx,cy,62,-Math.PI/2,-Math.PI/2+rArc);
+      ctx.strokeStyle='rgba(98,144,195,0.8)'; ctx.lineWidth=3; ctx.stroke();
+
+      // inner polygon — pattern score
+      const sides=3+Math.floor(norm(p)*3); // 3 to 6 sides
+      const pRadius=30+norm(p)*20;
+      ctx.beginPath();
+      for(let i=0;i<=sides;i++){
+        const a=(i/sides)*Math.PI*2-Math.PI/2;
+        const x=cx+Math.cos(a)*pRadius, y=cy+Math.sin(a)*pRadius;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.fillStyle='rgba(74,222,128,0.1)'; ctx.fill();
+      ctx.strokeStyle='rgba(74,222,128,0.6)'; ctx.lineWidth=2; ctx.stroke();
+
+      // center dot
+      ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2);
+      const pct=total/1000;
+      ctx.fillStyle=pct>0.7?'#EBBAB9':pct>0.4?'#6290C3':'rgba(254,254,250,0.5)';
+      ctx.fill();
+
+      // score text inside canvas
+      ctx.font='900 28px Orbitron, monospace';
+      ctx.fillStyle='rgba(254,254,250,0.9)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(total, cx, cy+1);
+    }
+
+  })(); // end ISLAND TRIAL IIFE
+</script>
+</body>
+</html>

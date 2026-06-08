@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard — Rush Island</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--indigo:#192A51;--rose:#EBBAB9;--denim:#6290C3;--white:#FEFEFA;--black:#100C08;}
+    body{background:var(--black);color:var(--white);font-family:'Exo 2',sans-serif;overflow-x:hidden;cursor:none;}
+    .cursor{width:14px;height:14px;background:var(--rose);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;mix-blend-mode:difference;}
+    .cursor-ring{width:40px;height:40px;border:1.5px solid var(--denim);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transition:all 0.14s ease;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:rgba(16,12,8,0.55);backdrop-filter:blur(16px);border-bottom:1px solid rgba(235,186,185,0.1);}
+    .nav-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1.1rem;color:var(--white);text-decoration:none;letter-spacing:0.12em;display:flex;align-items:center;gap:0.6rem;}
+    .nav-logo-img{height:36px;width:36px;object-fit:contain;border-radius:4px;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+    .nav-links{display:flex;gap:2rem;list-style:none;}
+    .nav-links a{color:rgba(254,254,250,0.55);text-decoration:none;font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;transition:color 0.2s;}
+    .nav-links a:hover{color:var(--rose);}
+    .nav-play{font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:0.6rem 1.4rem;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
+
+    .page-hero{min-height:45vh;display:flex;flex-direction:column;justify-content:flex-end;padding:8rem 5rem 4rem;position:relative;overflow:hidden;background:linear-gradient(160deg,#100C08 0%,#0d1a30 60%,#192A51 100%);}
+    .page-hero::before{content:'#1';position:absolute;right:2rem;top:50%;transform:translateY(-50%);font-family:'Orbitron',monospace;font-size:20rem;font-weight:900;color:rgba(254,254,250,0.02);pointer-events:none;line-height:1;}
+    .page-title{font-family:'Orbitron',monospace;font-size:clamp(2.5rem,6vw,5.5rem);font-weight:900;line-height:1;position:relative;z-index:1;animation:fadeUp 0.7s ease both;}
+    .page-title span{color:var(--rose);}
+    .page-sub{max-width:500px;font-size:1rem;line-height:1.7;color:rgba(254,254,250,0.55);margin-top:1.2rem;position:relative;z-index:1;animation:fadeUp 0.7s 0.15s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+    .section-label{font-size:0.65rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--rose);margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem;}
+    .section-label::before{content:'';width:1.8rem;height:1px;background:var(--rose);}
+
+    .lb-content{padding:5rem;}
+    .lb-tabs{display:flex;gap:0;margin-bottom:3rem;border-bottom:1px solid rgba(98,144,195,0.15);}
+    .lb-tab{font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.8rem 1.5rem;color:rgba(254,254,250,0.35);cursor:pointer;transition:all 0.2s;border-bottom:2px solid transparent;margin-bottom:-1px;}
+    .lb-tab.active{color:var(--rose);border-bottom-color:var(--rose);}
+    .lb-tab:hover{color:var(--white);}
+
+    /* Top 3 podium */
+    .podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:1px;margin-bottom:2px;}
+    .podium-card{
+      padding:2.5rem 2rem;text-align:center;
+      border:1px solid rgba(98,144,195,0.15);position:relative;overflow:hidden;
+    }
+    .podium-card.first{background:rgba(235,186,185,0.08);border-color:rgba(235,186,185,0.3);}
+    .podium-card.second{background:rgba(25,42,81,0.3);}
+    .podium-card.third{background:rgba(25,42,81,0.2);}
+    .podium-rank{font-family:'Orbitron',monospace;font-size:3rem;font-weight:900;line-height:1;margin-bottom:0.8rem;}
+    .rank-gold{color:var(--rose);}
+    .rank-silver{color:var(--denim);}
+    .rank-bronze{color:rgba(254,254,250,0.4);}
+    .podium-name{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:0.3rem;}
+    .podium-zone{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--rose);margin-bottom:0.8rem;}
+    .podium-time{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:900;color:var(--denim);}
+    .podium-time-label{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(254,254,250,0.3);}
+    .podium-crown{font-size:2rem;position:absolute;top:1rem;right:1.2rem;opacity:0.3;}
+
+    /* Table */
+    .lb-table{width:100%;border-collapse:collapse;}
+    .lb-table thead tr{border-bottom:1px solid rgba(98,144,195,0.2);}
+    .lb-table th{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(254,254,250,0.3);padding:0.8rem 1.2rem;text-align:left;}
+    .lb-table tbody tr{border-bottom:1px solid rgba(98,144,195,0.08);transition:background 0.2s;}
+    .lb-table tbody tr:hover{background:rgba(25,42,81,0.3);}
+    .lb-table td{padding:1rem 1.2rem;font-size:0.88rem;}
+    .td-rank{font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:rgba(254,254,250,0.3);}
+    .td-name{font-family:'Orbitron',monospace;font-size:0.9rem;font-weight:700;color:var(--white);}
+    .td-zone{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--denim);}
+    .td-time{font-family:'Orbitron',monospace;font-size:0.9rem;color:var(--rose);}
+    .td-badge{display:inline-block;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.15rem 0.5rem;border:1px solid;border-radius:0;}
+    .badge-legend{color:#a855f7;border-color:rgba(168,85,247,0.3);}
+    .badge-top{color:var(--rose);border-color:rgba(235,186,185,0.3);}
+    .td-coins{font-family:'Orbitron',monospace;font-size:0.82rem;color:#f0c040;}
+    .hall-name-inner{display:flex;flex-direction:column;align-items:center;gap:0.3rem;}
+    .hall-season{font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(235,186,185,0.4);font-family:'Exo 2',sans-serif;font-weight:400;}
+
+    .hall-section{margin-top:4rem;padding-top:4rem;border-top:1px solid rgba(98,144,195,0.15);}
+    .hall-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin-top:2rem;}
+    .hall-name{background:rgba(25,42,81,0.3);border:1px solid rgba(235,186,185,0.1);padding:1rem;font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;color:var(--rose);text-align:center;transition:all 0.2s;}
+    .hall-name:hover{background:rgba(235,186,185,0.08);border-color:rgba(235,186,185,0.3);}
+
+    .btn-play{font-family:'Orbitron',monospace;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--rose);color:var(--black);padding:1rem 2.2rem;text-decoration:none;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all 0.25s;font-weight:700;display:inline-block;}
+    .btn-play:hover{background:var(--white);}
+    footer{background:var(--black);padding:2rem 5rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(98,144,195,0.1);font-size:0.72rem;color:rgba(254,254,250,0.25);}
+    .footer-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:0.9rem;color:var(--white);letter-spacing:0.1em;}
+    .footer-links{display:flex;gap:2rem;}
+    .footer-links a{color:rgba(254,254,250,0.3);text-decoration:none;transition:color 0.2s;}
+    .footer-links a:hover{color:var(--rose);}
+    .reveal{opacity:0;transform:translateY(30px);transition:all 0.6s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+
+    /* nav online */
+    .nav-online{display:flex;align-items:center;gap:0.45rem;font-size:0.68rem;letter-spacing:0.1em;color:rgba(254,254,250,0.45);margin-right:1rem;}
+    .online-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,0.8);animation:pulse 2s ease infinite;}
+    #online-count{color:#4ade80;font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;}
+
+    /* clan tags */
+    .td-clan{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--denim);display:block;margin-top:0.15rem;}
+    .td-name-wrap{display:flex;flex-direction:column;}
+    .lb-tab.coming{opacity:0.4;cursor:not-allowed;}
+    .lb-tab.coming::after{content:' (S2)';font-size:0.55rem;color:var(--denim);}
+
+    /* clan rankings section */
+    .clan-section{margin-top:4rem;padding-top:4rem;border-top:1px solid rgba(98,144,195,0.15);}
+    .clan-rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:2rem;}
+    .clan-rank-card{background:rgba(25,42,81,0.25);border:1px solid rgba(98,144,195,0.1);padding:1.8rem;display:flex;align-items:center;gap:1.2rem;transition:all 0.3s;}
+    .clan-rank-card:hover{background:rgba(25,42,81,0.45);border-color:rgba(98,144,195,0.3);}
+    .clan-rank-num{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;color:rgba(254,254,250,0.15);width:2.5rem;flex-shrink:0;text-align:center;}
+    .clan-rank-card:nth-child(1) .clan-rank-num{color:var(--rose);}
+    .clan-rank-card:nth-child(2) .clan-rank-num{color:var(--denim);}
+    .clan-rank-card:nth-child(3) .clan-rank-num{color:rgba(254,254,250,0.35);}
+    .clan-rank-icon{font-size:1.6rem;}
+    .clan-rank-info{flex:1;}
+    .clan-rank-name{font-family:'Orbitron',monospace;font-size:0.82rem;font-weight:700;color:var(--white);}
+    .clan-rank-tag{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--denim);margin-top:0.1rem;}
+    .clan-rank-score{font-family:'Orbitron',monospace;font-size:0.8rem;font-weight:700;color:#f0c040;margin-top:0.3rem;}
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <nav>
+    <a class="nav-logo" href="index.html"><img src="logo.png" alt="Rush Island" class="nav-logo-img" onerror="this.style.display='none'">RUSH ISLAND</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li><li><a href="zones.html">Zones</a></li>
+      <li><a href="leaderboard.html">Leaderboard</a></li><li><a href="about.html">About</a></li>
+    </ul>
+    <div class="nav-online"><span class="online-dot"></span><span id="online-count">3,284</span>&nbsp;online</div>
+    <a class="nav-play" href="index.html#trial">Enter Rush Island →</a>
+  </nav>
+
+  <section class="page-hero">
+    <h1 class="page-title">Hall of <span>Legends</span></h1>
+    <p class="page-sub">The names that made it to Final Island. The list never resets. Your name could be next — or it couldn't.</p>
+  </section>
+
+  <div class="lb-content">
+    <div class="lb-tabs reveal">
+      <div class="lb-tab active">Season 1 · All Time</div>
+      <div class="lb-tab">Speed Run</div>
+      <div class="lb-tab">Zone Masters</div>
+      <div class="lb-tab">Clan Wars</div>
+      <div class="lb-tab coming">Coming Soon</div>
+    </div>
+
+    <!-- TOP 3 -->
+    <div class="section-label reveal">Top 3 This Season</div>
+    <div class="podium reveal">
+      <div class="podium-card second">
+        <div class="podium-crown">🥈</div>
+        <div class="podium-rank rank-silver">#2</div>
+        <div class="podium-name">SpeedDemon99</div>
+        <div class="podium-zone">Final Island · Zone 12</div>
+        <div class="podium-time">4:12.3</div>
+        <div class="podium-time-label">Total Clear Time</div>
+      </div>
+      <div class="podium-card first">
+        <div class="podium-crown">👑</div>
+        <div class="podium-rank rank-gold">#1</div>
+        <div class="podium-name">xX_IslandKing_Xx</div>
+        <div class="podium-zone">Final Island · Zone 12</div>
+        <div class="podium-time">3:58.1</div>
+        <div class="podium-time-label">Total Clear Time</div>
+      </div>
+      <div class="podium-card third">
+        <div class="podium-crown">🥉</div>
+        <div class="podium-rank rank-bronze">#3</div>
+        <div class="podium-name">RushQueen_07</div>
+        <div class="podium-zone">Final Island · Zone 12</div>
+        <div class="podium-time">4:31.7</div>
+        <div class="podium-time-label">Total Clear Time</div>
+      </div>
+    </div>
+
+    <!-- FULL TABLE -->
+    <div class="reveal" style="margin-top:2px;">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Clan</th>
+            <th>Highest Zone</th>
+            <th>Best Time</th>
+            <th>Rush Coins</th>
+            <th>Badges</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-rank">4</td><td><div class="td-name-wrap"><span class="td-name">ProGamerRush</span></div></td><td class="td-clan">⚡ VoidRunners</td><td class="td-zone">Final Island</td><td class="td-time">4:47.0</td><td class="td-coins">🪙 18,450</td><td><span class="td-badge badge-legend">Legend</span></td></tr>
+          <tr><td class="td-rank">5</td><td><div class="td-name-wrap"><span class="td-name">NeverGiveUp_K</span></div></td><td class="td-clan">— Solo</td><td class="td-zone">Final Island</td><td class="td-time">5:02.4</td><td class="td-coins">🪙 14,210</td><td><span class="td-badge badge-legend">Legend</span></td></tr>
+          <tr><td class="td-rank">6</td><td><div class="td-name-wrap"><span class="td-name">VoidWalker_X</span></div></td><td class="td-clan">⚡ VoidRunners</td><td class="td-zone">Zone 11</td><td class="td-time">8:34.1</td><td class="td-coins">🪙 9,880</td><td><span class="td-badge badge-top">Top 10</span></td></tr>
+          <tr><td class="td-rank">7</td><td><div class="td-name-wrap"><span class="td-name">ChainBreaker</span></div></td><td class="td-clan">🌪️ StormChasers</td><td class="td-zone">Zone 11</td><td class="td-time">9:01.8</td><td class="td-coins">🪙 8,300</td><td><span class="td-badge badge-top">Top 10</span></td></tr>
+          <tr><td class="td-rank">8</td><td><div class="td-name-wrap"><span class="td-name">NotEasyAtAll</span></div></td><td class="td-clan">🌪️ StormChasers</td><td class="td-zone">Zone 10</td><td class="td-time">12:18.3</td><td class="td-coins">🪙 5,120</td><td></td></tr>
+          <tr><td class="td-rank">9</td><td><div class="td-name-wrap"><span class="td-name">RushGodMode</span></div></td><td class="td-clan">💀 ShadowRun</td><td class="td-zone">Zone 10</td><td class="td-time">13:55.0</td><td class="td-coins">🪙 4,750</td><td></td></tr>
+          <tr><td class="td-rank">10</td><td><div class="td-name-wrap"><span class="td-name">LastCheckpoint</span></div></td><td class="td-clan">— Solo</td><td class="td-zone">Zone 9</td><td class="td-time">18:22.7</td><td class="td-coins">🪙 2,900</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CLAN RANKINGS -->
+    <div class="clan-section reveal">
+      <div class="section-label">Clan Wars · Season 1</div>
+      <p style="font-size:0.88rem;color:rgba(254,254,250,0.5);max-width:500px;margin-bottom:0.5rem;">Top clans ranked by combined zone completions, speed run points, and Rush Coins earned this season.</p>
+      <div class="clan-rank-grid">
+        <div class="clan-rank-card">
+          <div class="clan-rank-num">#1</div>
+          <div class="clan-rank-icon">⚡</div>
+          <div class="clan-rank-info">
+            <div class="clan-rank-name">VoidRunners</div>
+            <div class="clan-rank-tag">847 Members · Zone 9 avg</div>
+            <div class="clan-rank-score">🪙 2,148,300 clan pts</div>
+          </div>
+        </div>
+        <div class="clan-rank-card">
+          <div class="clan-rank-num">#2</div>
+          <div class="clan-rank-icon">🌪️</div>
+          <div class="clan-rank-info">
+            <div class="clan-rank-name">StormChasers</div>
+            <div class="clan-rank-tag">612 Members · Zone 8 avg</div>
+            <div class="clan-rank-score">🪙 1,874,100 clan pts</div>
+          </div>
+        </div>
+        <div class="clan-rank-card">
+          <div class="clan-rank-num">#3</div>
+          <div class="clan-rank-icon">💀</div>
+          <div class="clan-rank-info">
+            <div class="clan-rank-name">ShadowRun</div>
+            <div class="clan-rank-tag">490 Members · Zone 7 avg</div>
+            <div class="clan-rank-score">🪙 1,430,500 clan pts</div>
+          </div>
+        </div>
+        <div class="clan-rank-card">
+          <div class="clan-rank-num">#4</div>
+          <div class="clan-rank-icon">🔥</div>
+          <div class="clan-rank-info">
+            <div class="clan-rank-name">BlazeSquad</div>
+            <div class="clan-rank-tag">331 Members · Zone 7 avg</div>
+            <div class="clan-rank-score">🪙 998,200 clan pts</div>
+          </div>
+        </div>
+        <div class="clan-rank-card">
+          <div class="clan-rank-num">#5</div>
+          <div class="clan-rank-icon">🌊</div>
+          <div class="clan-rank-info">
+            <div class="clan-rank-name">TideBreakers</div>
+            <div class="clan-rank-tag">278 Members · Zone 6 avg</div>
+            <div class="clan-rank-score">🪙 741,800 clan pts</div>
+          </div>
+        </div>
+        <div class="clan-rank-card" style="background:rgba(235,186,185,0.04);border:1px dashed rgba(98,144,195,0.2);cursor:pointer;">
+          <div class="clan-rank-num" style="color:rgba(254,254,250,0.1);">+</div>
+          <div class="clan-rank-icon">🏴</div>
+          <div class="clan-rank-info">
+            <div class="clan-rank-name" style="color:rgba(254,254,250,0.4);">Start Your Clan</div>
+            <div class="clan-rank-tag">Be one of the top 10 by Season end</div>
+            <div class="clan-rank-score" style="color:rgba(254,254,250,0.3);">Create → Recruit → Compete</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HALL OF LEGENDS -->
+    <div class="hall-section reveal">
+      <div class="section-label">Hall of Legends</div>
+      <p style="font-size:0.88rem;color:rgba(254,254,250,0.5);max-width:500px;margin-bottom:0.5rem;">These players completed Final Island. Their names stay here forever. Season resets don't touch this list.</p>
+      <div class="hall-grid">
+        <div class="hall-name"><div class="hall-name-inner"><span>xX_IslandKing_Xx</span><span class="hall-season">Season 1</span></div></div>
+        <div class="hall-name"><div class="hall-name-inner"><span>SpeedDemon99</span><span class="hall-season">Season 1</span></div></div>
+        <div class="hall-name"><div class="hall-name-inner"><span>RushQueen_07</span><span class="hall-season">Season 1</span></div></div>
+        <div class="hall-name"><div class="hall-name-inner"><span>ProGamerRush</span><span class="hall-season">Season 1</span></div></div>
+        <div class="hall-name"><div class="hall-name-inner"><span>NeverGiveUp_K</span><span class="hall-season">Season 1</span></div></div>
+        <div class="hall-name">???</div>
+        <div class="hall-name">???</div>
+        <div class="hall-name">???</div>
+        <div class="hall-name">???</div>
+        <div class="hall-name">???</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:4rem;" class="reveal">
+      <p style="font-size:1rem;color:rgba(254,254,250,0.5);margin-bottom:1.5rem;">Your name could be next. Or it couldn't.</p>
+      <a class="btn-play" href="index.html#trial">🎮 Take the Island Trial</a>
+    </div>
+  </div>
+
+  <footer>
+    <div><div class="footer-logo">RUSH ISLAND</div><div style="margin-top:0.4rem;">Rush Island · © 2026</div></div>
+    <div class="footer-links">
+      <a href="index.html">Home</a><a href="zones.html">Zones</a><a href="about.html">About</a>
+    </div>
+  </footer>
+
+  <script>
+    const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function anim(){cur.style.transform=`translate(${mx-7}px,${my-7}px)`;rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform=`translate(${rx-20}px,${ry-20}px)`;requestAnimationFrame(anim);})();
+    const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.08});
+    document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+    document.querySelectorAll('.lb-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        if(tab.classList.contains('coming')) return;
+        document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+    // animated online count
+    (function(){
+      const el=document.getElementById('online-count');
+      if(!el) return;
+      let base=3284;
+      setInterval(()=>{base+=Math.floor((Math.random()-0.45)*12);base=Math.max(2800,Math.min(4200,base));el.textContent=base.toLocaleString();},4000);
+    })();
+  </script>
+</body>
+</html>
